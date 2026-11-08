@@ -1,5 +1,13 @@
+import dns from 'node:dns';
 import mongoose from 'mongoose';
 import '../models';
+
+// Configure reliable DNS servers (Google + Cloudflare) to prevent Node.js querySrv ECONNREFUSED on MongoDB Atlas
+try {
+  dns.setServers(['8.8.8.8', '1.1.1.1', '8.8.4.4']);
+} catch {
+  // Ignore in environments where setting DNS servers is restricted
+}
 
 const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/shopnear_finance';
 
