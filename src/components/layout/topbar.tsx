@@ -2,8 +2,9 @@
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Menu, Bell, Sun, Moon, LogOut, User as UserIcon, Calendar } from 'lucide-react';
+import { Menu, Bell, LogOut, User as UserIcon, Calendar } from 'lucide-react';
 import { StatusBadge } from '@/components/shared/status-badge';
+import { ThemeToggle } from '@/components/theme/theme-toggle';
 
 interface TopbarProps {
   userName?: string;
@@ -22,18 +23,7 @@ export function Topbar({
 }: TopbarProps) {
   const router = useRouter();
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
-  const [isDarkMode, setIsDarkMode] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
-
-  const toggleTheme = () => {
-    const nextDark = !isDarkMode;
-    setIsDarkMode(nextDark);
-    if (nextDark) {
-      document.documentElement.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-    }
-  };
 
   const handleLogout = async () => {
     try {
@@ -80,13 +70,7 @@ export function Topbar({
       {/* Right actions */}
       <div className="flex items-center gap-2 sm:gap-3">
         {/* Theme toggle */}
-        <button
-          onClick={toggleTheme}
-          className="flex h-9 w-9 items-center justify-center rounded-xl text-slate-500 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800"
-          aria-label="Toggle dark mode"
-        >
-          {isDarkMode ? <Sun className="h-4 w-4 text-amber-400" /> : <Moon className="h-4 w-4" />}
-        </button>
+        <ThemeToggle />
 
         {/* Notifications */}
         <button

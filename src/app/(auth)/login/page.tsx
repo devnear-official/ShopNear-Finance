@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { Eye, EyeOff, ShieldCheck, CheckCircle, AlertCircle, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { ThemeToggle } from '@/components/theme/theme-toggle';
 
 function LoginForm() {
   const router = useRouter();
@@ -206,7 +207,10 @@ export default function LoginPage() {
       </div>
 
       {/* Right Login Form (Mobile & Desktop) */}
-      <div className="flex w-full flex-col justify-center px-4 py-12 sm:px-6 lg:w-1/2 lg:px-12 xl:px-20">
+      <div className="relative flex w-full flex-col justify-center px-4 py-12 sm:px-6 lg:w-1/2 lg:px-12 xl:px-20">
+        <div className="absolute top-6 right-6 z-20">
+          <ThemeToggle />
+        </div>
         <Suspense fallback={<div className="text-center text-sm text-slate-400">Loading form...</div>}>
           <LoginForm />
         </Suspense>
