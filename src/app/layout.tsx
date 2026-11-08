@@ -1,7 +1,9 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import { Inter } from 'next/font/google';
 import { Toaster } from 'sonner';
 import { ThemeProvider } from '@/components/theme/theme-context';
+import { PwaRegister } from '@/components/pwa/pwa-register';
+import { PwaInstallBanner } from '@/components/pwa/pwa-install-banner';
 import './globals.css';
 
 const inter = Inter({
@@ -10,9 +12,39 @@ const inter = Inter({
   variable: '--font-sans',
 });
 
+export const viewport: Viewport = {
+  themeColor: [
+    { media: '(prefers-color-scheme: light)', color: '#059669' },
+    { media: '(prefers-color-scheme: dark)', color: '#0b1220' },
+  ],
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 5,
+  viewportFit: 'cover',
+};
+
 export const metadata: Metadata = {
   title: 'ShopNear Finance — Business Financial Management',
   description: 'Precision double-entry financial management system for Bangladeshi businesses (BDT ৳)',
+  applicationName: 'ShopNear Finance',
+  manifest: '/manifest.webmanifest',
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'default',
+    title: 'ShopNear Finance',
+  },
+  formatDetection: {
+    telephone: true,
+  },
+  icons: {
+    icon: [
+      { url: '/icons/icon-192.svg', sizes: '192x192', type: 'image/svg+xml' },
+      { url: '/icons/icon-512.svg', sizes: '512x512', type: 'image/svg+xml' },
+    ],
+    apple: [
+      { url: '/icons/icon-192.svg', sizes: '192x192', type: 'image/svg+xml' },
+    ],
+  },
 };
 
 export default function RootLayout({
@@ -23,6 +55,9 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning className={`${inter.variable} h-full antialiased`}>
       <head>
+        <link rel="manifest" href="/manifest.webmanifest" />
+        <meta name="mobile-web-app-capable" content="yes" />
+        <meta name="apple-touch-fullscreen" content="yes" />
         <script
           dangerouslySetInnerHTML={{
             __html: `
@@ -40,6 +75,8 @@ export default function RootLayout({
       <body className="min-h-full flex flex-col font-sans bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100 transition-colors duration-150">
         <ThemeProvider>
           {children}
+          <PwaRegister />
+          <PwaInstallBanner />
           <Toaster position="top-right" richColors />
         </ThemeProvider>
       </body>
