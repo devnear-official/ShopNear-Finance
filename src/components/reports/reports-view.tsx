@@ -692,49 +692,103 @@ export function ReportsView() {
                 No outstanding balances for {agingType}.
               </p>
             ) : (
-              <div className="overflow-x-auto">
-                <table className="w-full text-left text-sm">
-                  <thead className="border-b bg-slate-50 text-xs uppercase text-slate-500 dark:bg-slate-800">
-                    <tr>
-                      <th className="px-4 py-3">Party Name</th>
-                      <th className="px-4 py-3 text-right">0-30 Days</th>
-                      <th className="px-4 py-3 text-right">31-60 Days</th>
-                      <th className="px-4 py-3 text-right">61-90 Days</th>
-                      <th className="px-4 py-3 text-right">90+ Days</th>
-                      <th className="px-4 py-3 text-right">Total Outstanding</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                    {agingData.map((row) => (
-                      <tr key={row.partyId} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/50">
-                        <td className="px-4 py-3 font-semibold text-slate-800 dark:text-slate-200">
-                          {row.partyName}
+              <>
+                {/* Mobile Aging Cards (Visible on phones) */}
+                <div className="block md:hidden divide-y divide-slate-100 dark:divide-slate-800">
+                  {agingData.map((row) => (
+                    <div key={row.partyId} className="p-4 space-y-2">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <span className="font-semibold text-sm text-slate-800 dark:text-slate-200">
+                            {row.partyName}
+                          </span>
                           {row.partyPhone && (
-                            <span className="block text-xs font-normal text-slate-400">
-                              {row.partyPhone}
-                            </span>
+                            <span className="block text-[11px] text-slate-400">📞 {row.partyPhone}</span>
                           )}
-                        </td>
-                        <td className="px-4 py-3 text-right text-slate-600 dark:text-slate-300">
-                          {formatBDT(row.currentPaisa)}
-                        </td>
-                        <td className="px-4 py-3 text-right text-slate-600 dark:text-slate-300">
-                          {formatBDT(row.days31To60Paisa)}
-                        </td>
-                        <td className="px-4 py-3 text-right text-amber-600">
-                          {formatBDT(row.days61To90Paisa)}
-                        </td>
-                        <td className="px-4 py-3 text-right text-red-600 font-medium">
-                          {formatBDT(row.over90DaysPaisa)}
-                        </td>
-                        <td className="px-4 py-3 text-right font-bold text-slate-900 dark:text-white">
-                          {formatBDT(row.totalPaisa)}
-                        </td>
+                        </div>
+                        <div className="text-right">
+                          <span className="text-[10px] uppercase text-slate-400 block">Total Due</span>
+                          <span className="font-mono text-sm font-bold text-slate-900 dark:text-white">
+                            {formatBDT(row.totalPaisa)}
+                          </span>
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-4 gap-1.5 rounded-xl bg-slate-50 p-2 dark:bg-slate-800/50 text-center text-[10px]">
+                        <div>
+                          <span className="text-slate-400 block">0-30d</span>
+                          <span className="font-mono font-medium text-slate-700 dark:text-slate-300">
+                            {row.currentPaisa > 0 ? formatBDT(row.currentPaisa) : '—'}
+                          </span>
+                        </div>
+                        <div>
+                          <span className="text-slate-400 block">31-60d</span>
+                          <span className="font-mono font-medium text-slate-700 dark:text-slate-300">
+                            {row.days31To60Paisa > 0 ? formatBDT(row.days31To60Paisa) : '—'}
+                          </span>
+                        </div>
+                        <div>
+                          <span className="text-slate-400 block">61-90d</span>
+                          <span className="font-mono font-medium text-amber-600">
+                            {row.days61To90Paisa > 0 ? formatBDT(row.days61To90Paisa) : '—'}
+                          </span>
+                        </div>
+                        <div>
+                          <span className="text-slate-400 block">90d+</span>
+                          <span className="font-mono font-bold text-red-600">
+                            {row.over90DaysPaisa > 0 ? formatBDT(row.over90DaysPaisa) : '—'}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Desktop Aging Table (Visible on >= md) */}
+                <div className="hidden md:block overflow-x-auto">
+                  <table className="w-full min-w-[720px] text-left text-sm">
+                    <thead className="border-b bg-slate-50 text-xs uppercase text-slate-500 dark:bg-slate-800">
+                      <tr>
+                        <th className="px-4 py-3">Party Name</th>
+                        <th className="px-4 py-3 text-right">0-30 Days</th>
+                        <th className="px-4 py-3 text-right">31-60 Days</th>
+                        <th className="px-4 py-3 text-right">61-90 Days</th>
+                        <th className="px-4 py-3 text-right">90+ Days</th>
+                        <th className="px-4 py-3 text-right">Total Outstanding</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                      {agingData.map((row) => (
+                        <tr key={row.partyId} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/50">
+                          <td className="px-4 py-3 font-semibold text-slate-800 dark:text-slate-200">
+                            {row.partyName}
+                            {row.partyPhone && (
+                              <span className="block text-xs font-normal text-slate-400">
+                                {row.partyPhone}
+                              </span>
+                            )}
+                          </td>
+                          <td className="px-4 py-3 text-right text-slate-600 dark:text-slate-300">
+                            {formatBDT(row.currentPaisa)}
+                          </td>
+                          <td className="px-4 py-3 text-right text-slate-600 dark:text-slate-300">
+                            {formatBDT(row.days31To60Paisa)}
+                          </td>
+                          <td className="px-4 py-3 text-right text-amber-600">
+                            {formatBDT(row.days61To90Paisa)}
+                          </td>
+                          <td className="px-4 py-3 text-right text-red-600 font-medium">
+                            {formatBDT(row.over90DaysPaisa)}
+                          </td>
+                          <td className="px-4 py-3 text-right font-bold text-slate-900 dark:text-white">
+                            {formatBDT(row.totalPaisa)}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </>
             )}
           </CardContent>
         </Card>

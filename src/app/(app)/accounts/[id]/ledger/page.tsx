@@ -95,50 +95,88 @@ export default function AccountStatementPage() {
             </div>
           </CardHeader>
 
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-sm">
-              <thead className="bg-slate-50 text-xs font-semibold text-slate-500 uppercase tracking-wider border-b border-slate-100 dark:bg-slate-800/40 dark:border-slate-800">
-                <tr>
-                  <th className="px-5 py-3">Date</th>
-                  <th className="px-5 py-3">Entry #</th>
-                  <th className="px-5 py-3">Description</th>
-                  <th className="px-5 py-3 text-right">Inflow (Debit)</th>
-                  <th className="px-5 py-3 text-right">Outflow (Credit)</th>
-                  <th className="px-5 py-3 text-right">Running Balance</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100 dark:divide-slate-800 text-xs">
-                {statement.entries.length === 0 ? (
-                  <tr>
-                    <td colSpan={6} className="px-5 py-8 text-center text-slate-400">
-                      No transactions recorded for this account.
-                    </td>
-                  </tr>
-                ) : (
-                  statement.entries.map((entry: any) => (
-                    <tr key={entry.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30">
-                      <td className="px-5 py-3 text-slate-500">{formatDate(entry.date)}</td>
-                      <td className="px-5 py-3 font-mono font-medium text-slate-900 dark:text-white">
+          {statement.entries.length === 0 ? (
+            <div className="p-8 text-center text-xs text-slate-400">
+              No transactions recorded for this account.
+            </div>
+          ) : (
+            <>
+              {/* Mobile Card List (Visible on phones) */}
+              <div className="block md:hidden divide-y divide-slate-100 dark:divide-slate-800">
+                {statement.entries.map((entry: any) => (
+                  <div key={entry.id} className="p-4 space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="font-mono text-xs font-bold text-slate-900 dark:text-white">
                         {entry.entryNumber}
-                      </td>
-                      <td className="px-5 py-3 text-slate-700 dark:text-slate-300 font-medium">
-                        {entry.description}
-                      </td>
-                      <td className="px-5 py-3 text-right font-mono font-semibold text-emerald-600">
-                        {entry.debit > 0 ? `+${formatBDT(entry.debit)}` : '—'}
-                      </td>
-                      <td className="px-5 py-3 text-right font-mono font-semibold text-orange-600">
-                        {entry.credit > 0 ? `-${formatBDT(entry.credit)}` : '—'}
-                      </td>
-                      <td className="px-5 py-3 text-right font-mono font-bold text-slate-900 dark:text-white">
-                        {formatBDT(entry.runningBalance)}
-                      </td>
+                      </span>
+                      <span className="text-[11px] text-slate-400">{formatDate(entry.date)}</span>
+                    </div>
+
+                    <p className="text-xs font-medium text-slate-800 dark:text-slate-200">{entry.description}</p>
+
+                    <div className="grid grid-cols-3 gap-2 rounded-xl bg-slate-50 p-2 dark:bg-slate-800/50 text-center text-[11px]">
+                      <div>
+                        <span className="text-[10px] uppercase font-semibold text-slate-400 block">Inflow</span>
+                        <span className="font-mono font-semibold text-emerald-600 dark:text-emerald-400">
+                          {entry.debit > 0 ? `+${formatBDT(entry.debit)}` : '—'}
+                        </span>
+                      </div>
+                      <div>
+                        <span className="text-[10px] uppercase font-semibold text-slate-400 block">Outflow</span>
+                        <span className="font-mono font-semibold text-orange-600 dark:text-orange-400">
+                          {entry.credit > 0 ? `-${formatBDT(entry.credit)}` : '—'}
+                        </span>
+                      </div>
+                      <div>
+                        <span className="text-[10px] uppercase font-semibold text-slate-400 block">Balance</span>
+                        <span className="font-mono font-bold text-slate-900 dark:text-white">
+                          {formatBDT(entry.runningBalance)}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Desktop Table View (Visible on >= md) */}
+              <div className="hidden md:block overflow-x-auto">
+                <table className="w-full min-w-[700px] text-left text-sm">
+                  <thead className="bg-slate-50 text-xs font-semibold text-slate-500 uppercase tracking-wider border-b border-slate-100 dark:bg-slate-800/40 dark:border-slate-800">
+                    <tr>
+                      <th className="px-5 py-3">Date</th>
+                      <th className="px-5 py-3">Entry #</th>
+                      <th className="px-5 py-3">Description</th>
+                      <th className="px-5 py-3 text-right">Inflow (Debit)</th>
+                      <th className="px-5 py-3 text-right">Outflow (Credit)</th>
+                      <th className="px-5 py-3 text-right">Running Balance</th>
                     </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100 dark:divide-slate-800 text-xs">
+                    {statement.entries.map((entry: any) => (
+                      <tr key={entry.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30">
+                        <td className="px-5 py-3 text-slate-500">{formatDate(entry.date)}</td>
+                        <td className="px-5 py-3 font-mono font-medium text-slate-900 dark:text-white">
+                          {entry.entryNumber}
+                        </td>
+                        <td className="px-5 py-3 text-slate-700 dark:text-slate-300 font-medium">
+                          {entry.description}
+                        </td>
+                        <td className="px-5 py-3 text-right font-mono font-semibold text-emerald-600">
+                          {entry.debit > 0 ? `+${formatBDT(entry.debit)}` : '—'}
+                        </td>
+                        <td className="px-5 py-3 text-right font-mono font-semibold text-orange-600">
+                          {entry.credit > 0 ? `-${formatBDT(entry.credit)}` : '—'}
+                        </td>
+                        <td className="px-5 py-3 text-right font-mono font-bold text-slate-900 dark:text-white">
+                          {formatBDT(entry.runningBalance)}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </>
+          )}
         </Card>
       )}
     </div>

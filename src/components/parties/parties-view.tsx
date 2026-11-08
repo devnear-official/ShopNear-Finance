@@ -156,44 +156,77 @@ export function PartiesView({ type }: PartiesViewProps) {
               No {type}s found. Click &quot;Add {singular}&quot; to register one.
             </div>
           ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs">
-                <thead className="border-b bg-slate-50 uppercase text-slate-500 dark:bg-slate-800">
-                  <tr>
-                    <th className="px-4 py-3">{singular} Name</th>
-                    <th className="px-4 py-3">Phone</th>
-                    <th className="px-4 py-3">Email</th>
-                    <th className="px-4 py-3">Address</th>
-                    <th className="px-4 py-3 text-right">Opening Balance</th>
-                    <th className="px-4 py-3 text-right">Status</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                  {filtered.map((party) => (
-                    <tr key={party._id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30">
-                      <td className="px-4 py-3">
-                        <div className="font-semibold text-slate-900 dark:text-white">
-                          {party.name}
-                        </div>
-                      </td>
-                      <td className="px-4 py-3 font-mono text-slate-600 dark:text-slate-400">
-                        {party.phone || '-'}
-                      </td>
-                      <td className="px-4 py-3 text-slate-500">{party.email || '-'}</td>
-                      <td className="px-4 py-3 text-slate-500 max-w-[180px] truncate">
-                        {party.address || '-'}
-                      </td>
-                      <td className="px-4 py-3 text-right font-semibold text-slate-800 dark:text-slate-200">
+            <>
+              {/* Mobile Card List (Visible on phones) */}
+              <div className="block md:hidden divide-y divide-slate-100 dark:divide-slate-800">
+                {filtered.map((party) => (
+                  <div key={party._id} className="p-4 space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="font-bold text-sm text-slate-900 dark:text-white">
+                        {party.name}
+                      </span>
+                      <StatusBadge status={party.status || 'active'} />
+                    </div>
+
+                    <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-slate-500">
+                      {party.phone && <span>📞 {party.phone}</span>}
+                      {party.email && <span>✉️ {party.email}</span>}
+                    </div>
+
+                    {party.address && (
+                      <p className="text-[11px] text-slate-400">{party.address}</p>
+                    )}
+
+                    <div className="flex items-center justify-between text-xs pt-1 border-t border-slate-100 dark:border-slate-800/80">
+                      <span className="text-slate-400">Opening Balance:</span>
+                      <span className="font-mono font-semibold text-slate-800 dark:text-slate-200">
                         {formatBDT(party.openingBalance || 0)}
-                      </td>
-                      <td className="px-4 py-3 text-right">
-                        <StatusBadge status={party.status || 'active'} />
-                      </td>
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Desktop Table View (Visible on >= md) */}
+              <div className="hidden md:block overflow-x-auto">
+                <table className="w-full min-w-[650px] text-left text-xs">
+                  <thead className="border-b bg-slate-50 uppercase text-slate-500 dark:bg-slate-800">
+                    <tr>
+                      <th className="px-4 py-3">{singular} Name</th>
+                      <th className="px-4 py-3">Phone</th>
+                      <th className="px-4 py-3">Email</th>
+                      <th className="px-4 py-3">Address</th>
+                      <th className="px-4 py-3 text-right">Opening Balance</th>
+                      <th className="px-4 py-3 text-right">Status</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                    {filtered.map((party) => (
+                      <tr key={party._id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30">
+                        <td className="px-4 py-3">
+                          <div className="font-semibold text-slate-900 dark:text-white">
+                            {party.name}
+                          </div>
+                        </td>
+                        <td className="px-4 py-3 font-mono text-slate-600 dark:text-slate-400">
+                          {party.phone || '-'}
+                        </td>
+                        <td className="px-4 py-3 text-slate-500">{party.email || '-'}</td>
+                        <td className="px-4 py-3 text-slate-500 max-w-[180px] truncate">
+                          {party.address || '-'}
+                        </td>
+                        <td className="px-4 py-3 text-right font-semibold text-slate-800 dark:text-slate-200">
+                          {formatBDT(party.openingBalance || 0)}
+                        </td>
+                        <td className="px-4 py-3 text-right">
+                          <StatusBadge status={party.status || 'active'} />
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </>
           )}
         </CardContent>
       </Card>

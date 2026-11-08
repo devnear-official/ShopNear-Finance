@@ -132,58 +132,101 @@ export default function InvestorDetailPage() {
       </div>
 
       {/* Ledger Table */}
-      <Card>
+      <Card className="overflow-hidden">
         <CardHeader>
           <CardTitle className="text-base font-bold">Capital Sub-Ledger Statement</CardTitle>
         </CardHeader>
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-sm">
-            <thead className="bg-slate-50 text-xs font-semibold text-slate-500 uppercase tracking-wider border-b border-slate-100 dark:bg-slate-800/40 dark:border-slate-800">
-              <tr>
-                <th className="px-5 py-3">Date</th>
-                <th className="px-5 py-3">Entry #</th>
-                <th className="px-5 py-3">Description</th>
-                <th className="px-5 py-3 text-right">Contribution</th>
-                <th className="px-5 py-3 text-right">Withdrawal</th>
-                <th className="px-5 py-3 text-right">Profit / Loss</th>
-                <th className="px-5 py-3 text-right">Capital Balance</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100 dark:divide-slate-800 text-xs">
-              {entries.length === 0 ? (
-                <tr>
-                  <td colSpan={7} className="px-5 py-8 text-center text-slate-400">
-                    No transactions recorded for this investor yet.
-                  </td>
-                </tr>
-              ) : (
-                entries.map((entry: any) => (
-                  <tr key={entry.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30">
-                    <td className="px-5 py-3 text-slate-500">{formatDate(entry.date)}</td>
-                    <td className="px-5 py-3 font-mono font-medium text-slate-900 dark:text-white">
+
+        {entries.length === 0 ? (
+          <div className="p-8 text-center text-xs text-slate-400">
+            No transactions recorded for this investor yet.
+          </div>
+        ) : (
+          <>
+            {/* Mobile Card List (Visible on phones) */}
+            <div className="block md:hidden divide-y divide-slate-100 dark:divide-slate-800">
+              {entries.map((entry: any) => (
+                <div key={entry.id} className="p-4 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="font-mono text-xs font-bold text-slate-900 dark:text-white">
                       {entry.entryNumber}
-                    </td>
-                    <td className="px-5 py-3 text-slate-700 dark:text-slate-300 font-medium">
-                      {entry.description}
-                    </td>
-                    <td className="px-5 py-3 text-right font-mono font-semibold text-emerald-600">
-                      {entry.contribution > 0 ? `+${formatBDT(entry.contribution)}` : '—'}
-                    </td>
-                    <td className="px-5 py-3 text-right font-mono font-semibold text-orange-600">
-                      {entry.withdrawal > 0 ? `-${formatBDT(entry.withdrawal)}` : '—'}
-                    </td>
-                    <td className="px-5 py-3 text-right font-mono font-semibold text-blue-600">
-                      {entry.profitLoss !== 0 ? formatBDT(entry.profitLoss) : '—'}
-                    </td>
-                    <td className="px-5 py-3 text-right font-mono font-bold text-purple-900 dark:text-purple-300">
-                      {formatBDT(entry.runningCapital)}
-                    </td>
+                    </span>
+                    <span className="text-[11px] text-slate-400">{formatDate(entry.date)}</span>
+                  </div>
+                  <p className="text-xs font-medium text-slate-800 dark:text-slate-200">{entry.description}</p>
+                  <div className="grid grid-cols-4 gap-1.5 rounded-xl bg-slate-50 p-2 dark:bg-slate-800/50 text-center text-[10px]">
+                    <div>
+                      <span className="text-slate-400 block uppercase">In</span>
+                      <span className="font-mono font-semibold text-emerald-600 dark:text-emerald-400">
+                        {entry.contribution > 0 ? `+${formatBDT(entry.contribution)}` : '—'}
+                      </span>
+                    </div>
+                    <div>
+                      <span className="text-slate-400 block uppercase">Out</span>
+                      <span className="font-mono font-semibold text-orange-600 dark:text-orange-400">
+                        {entry.withdrawal > 0 ? `-${formatBDT(entry.withdrawal)}` : '—'}
+                      </span>
+                    </div>
+                    <div>
+                      <span className="text-slate-400 block uppercase">P/L</span>
+                      <span className="font-mono font-semibold text-blue-600 dark:text-blue-400">
+                        {entry.profitLoss !== 0 ? formatBDT(entry.profitLoss) : '—'}
+                      </span>
+                    </div>
+                    <div>
+                      <span className="text-slate-400 block uppercase">Balance</span>
+                      <span className="font-mono font-bold text-purple-700 dark:text-purple-300">
+                        {formatBDT(entry.runningCapital)}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Desktop Table View (Visible on >= md) */}
+            <div className="hidden md:block overflow-x-auto">
+              <table className="w-full min-w-[750px] text-left text-sm">
+                <thead className="bg-slate-50 text-xs font-semibold text-slate-500 uppercase tracking-wider border-b border-slate-100 dark:bg-slate-800/40 dark:border-slate-800">
+                  <tr>
+                    <th className="px-5 py-3">Date</th>
+                    <th className="px-5 py-3">Entry #</th>
+                    <th className="px-5 py-3">Description</th>
+                    <th className="px-5 py-3 text-right">Contribution</th>
+                    <th className="px-5 py-3 text-right">Withdrawal</th>
+                    <th className="px-5 py-3 text-right">Profit / Loss</th>
+                    <th className="px-5 py-3 text-right">Capital Balance</th>
                   </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
+                </thead>
+                <tbody className="divide-y divide-slate-100 dark:divide-slate-800 text-xs">
+                  {entries.map((entry: any) => (
+                    <tr key={entry.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30">
+                      <td className="px-5 py-3 text-slate-500">{formatDate(entry.date)}</td>
+                      <td className="px-5 py-3 font-mono font-medium text-slate-900 dark:text-white">
+                        {entry.entryNumber}
+                      </td>
+                      <td className="px-5 py-3 text-slate-700 dark:text-slate-300 font-medium">
+                        {entry.description}
+                      </td>
+                      <td className="px-5 py-3 text-right font-mono font-semibold text-emerald-600">
+                        {entry.contribution > 0 ? `+${formatBDT(entry.contribution)}` : '—'}
+                      </td>
+                      <td className="px-5 py-3 text-right font-mono font-semibold text-orange-600">
+                        {entry.withdrawal > 0 ? `-${formatBDT(entry.withdrawal)}` : '—'}
+                      </td>
+                      <td className="px-5 py-3 text-right font-mono font-semibold text-blue-600">
+                        {entry.profitLoss !== 0 ? formatBDT(entry.profitLoss) : '—'}
+                      </td>
+                      <td className="px-5 py-3 text-right font-mono font-bold text-purple-900 dark:text-purple-300">
+                        {formatBDT(entry.runningCapital)}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </>
+        )}
       </Card>
     </div>
   );

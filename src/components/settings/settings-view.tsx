@@ -533,8 +533,38 @@ export function SettingsView() {
 
           <Card>
             <CardContent className="p-0">
-              <div className="overflow-x-auto">
-                <table className="w-full text-left text-xs">
+              {/* Mobile Users Cards (Visible on phones) */}
+              <div className="block md:hidden divide-y divide-slate-100 dark:divide-slate-800">
+                {users.map((u) => (
+                  <div key={u._id} className="p-4 space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="font-semibold text-sm text-slate-900 dark:text-white">
+                        {u.name}
+                      </span>
+                      <StatusBadge status={u.status} />
+                    </div>
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="text-slate-400">{u.email}</span>
+                      <span className="font-semibold text-emerald-700 dark:text-emerald-400 capitalize">
+                        {u.roleId?.name || u.roleId?.key || 'Staff'}
+                      </span>
+                    </div>
+                    {u.phone && <p className="text-xs text-slate-500">📞 {u.phone}</p>}
+                    <div className="pt-1 flex justify-end">
+                      <button
+                        onClick={() => handleToggleUserStatus(u._id, u.status)}
+                        className="rounded-lg border px-3 py-1 text-xs font-medium hover:bg-slate-50 dark:hover:bg-slate-800"
+                      >
+                        {u.status === 'active' ? 'Suspend User' : 'Activate User'}
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Desktop Users Table (Visible on >= md) */}
+              <div className="hidden md:block overflow-x-auto">
+                <table className="w-full min-w-[600px] text-left text-xs">
                   <thead className="border-b bg-slate-50 uppercase text-slate-500 dark:bg-slate-800">
                     <tr>
                       <th className="px-4 py-3">User</th>
@@ -588,8 +618,35 @@ export function SettingsView() {
             </CardDescription>
           </CardHeader>
           <CardContent className="p-0">
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs">
+            {/* Mobile Categories Cards (Visible on phones) */}
+            <div className="block md:hidden divide-y divide-slate-100 dark:divide-slate-800">
+              {categories.map((c) => (
+                <div key={c._id} className="p-4 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="font-semibold text-sm text-slate-900 dark:text-white">{c.name}</span>
+                    <StatusBadge status={c.isActive ? 'active' : 'inactive'} />
+                  </div>
+                  <div className="flex items-center justify-between text-xs">
+                    <span
+                      className={`inline-flex rounded-full px-2 py-0.5 text-[10px] font-semibold capitalize ${
+                        c.type === 'income'
+                          ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300'
+                          : 'bg-red-100 text-red-800 dark:bg-red-950 dark:text-red-300'
+                      }`}
+                    >
+                      {c.type}
+                    </span>
+                    <span className="text-slate-500 text-[11px]">
+                      {c.isAsset ? 'Capital Asset' : 'Operating Flow'}
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Desktop Categories Table (Visible on >= md) */}
+            <div className="hidden md:block overflow-x-auto">
+              <table className="w-full min-w-[550px] text-left text-xs">
                 <thead className="border-b bg-slate-50 uppercase text-slate-500 dark:bg-slate-800">
                   <tr>
                     <th className="px-4 py-3">Category Name</th>

@@ -174,78 +174,157 @@ export default function LoansPage() {
         </div>
       </div>
 
-      <Card>
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-sm">
-            <thead className="bg-slate-50 text-xs uppercase font-semibold text-slate-500 border-b border-slate-100 dark:bg-slate-800/40 dark:border-slate-800">
-              <tr>
-                <th className="px-5 py-3.5">Loan ID</th>
-                <th className="px-5 py-3.5">Direction & Party</th>
-                <th className="px-5 py-3.5">Due Date & Term</th>
-                <th className="px-5 py-3.5 text-right">Original Principal</th>
-                <th className="px-5 py-3.5 text-right">Outstanding</th>
-                <th className="px-5 py-3.5">Status</th>
-                <th className="px-5 py-3.5 text-right">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100 dark:divide-slate-800 text-xs">
-              {isLoading ? (
-                <tr>
-                  <td colSpan={7} className="px-5 py-8 text-center text-slate-400">Loading loan records...</td>
-                </tr>
-              ) : loans.length === 0 ? (
-                <tr>
-                  <td colSpan={7} className="px-5 py-8 text-center text-slate-400">No loans recorded yet.</td>
-                </tr>
-              ) : (
-                loans.map((loan) => (
-                  <tr key={loan._id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30">
-                    <td className="px-5 py-3 font-mono font-bold text-slate-900 dark:text-white">
-                      {loan.loanNumber}
-                    </td>
-                    <td className="px-5 py-3">
-                      <span className="font-semibold text-slate-800 dark:text-slate-200 block">
-                        {loan.partyName}
+      {/* Loans Display */}
+      {isLoading ? (
+        <Card className="p-8 text-center text-slate-400">
+          <p className="text-sm">Loading loan records...</p>
+        </Card>
+      ) : loans.length === 0 ? (
+        <Card className="flex flex-col items-center justify-center p-8 sm:p-12 text-center border-dashed">
+          <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-amber-50 text-amber-600 dark:bg-amber-950/50 dark:text-amber-400 mb-4 shadow-sm">
+            <HandCoins className="h-7 w-7" />
+          </div>
+          <h3 className="text-base font-bold text-slate-900 dark:text-white">No loans recorded yet</h3>
+          <p className="text-xs text-slate-500 max-w-sm mx-auto mt-1 mb-6">
+            Record loans taken from financial lenders or loans disbursed to partners with scheduled repayments.
+          </p>
+          <Button onClick={() => setIsCreateOpen(true)} className="gap-2 shadow-sm">
+            <Plus className="h-4 w-4" /> Add First Loan
+          </Button>
+        </Card>
+      ) : (
+        <>
+          {/* Mobile Card List (Visible on phones & narrow screens) */}
+          <div className="block md:hidden space-y-3">
+            {loans.map((loan) => (
+              <div
+                key={loan._id}
+                className="rounded-2xl border border-slate-200/80 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900 space-y-3"
+              >
+                <div className="flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-2">
+                    <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-amber-50 text-amber-600 dark:bg-amber-950/60 dark:text-amber-400">
+                      <HandCoins className="h-4 w-4" />
+                    </div>
+                    <div>
+                      <span className="font-mono text-sm font-bold text-slate-900 dark:text-white block">
+                        {loan.loanNumber}
                       </span>
-                      <span className="capitalize text-[11px] text-slate-400">
+                      <span className="text-[11px] font-medium text-slate-500 capitalize">
                         {loan.direction === 'taken' ? 'Borrowed (Liability)' : 'Lent Out (Asset)'}
                       </span>
-                    </td>
-                    <td className="px-5 py-3 text-slate-500">
-                      Due: {formatDate(loan.dueDate)} ({loan.termMonths} mo, {loan.interestRate}% interest)
-                    </td>
-                    <td className="px-5 py-3 text-right font-mono font-semibold">
+                    </div>
+                  </div>
+                  <StatusBadge status={loan.status} />
+                </div>
+
+                <div className="border-t border-slate-100 dark:border-slate-800/80 pt-2.5 text-xs space-y-1">
+                  <div className="flex items-center justify-between">
+                    <span className="font-semibold text-slate-800 dark:text-slate-200">{loan.partyName}</span>
+                    <span className="text-[11px] text-slate-400">Due: {formatDate(loan.dueDate)}</span>
+                  </div>
+                  <p className="text-[11px] text-slate-400">
+                    Term: {loan.termMonths} mo • Interest: {loan.interestRate}%
+                  </p>
+                </div>
+
+                <div className="grid grid-cols-2 gap-2 rounded-xl bg-slate-50 p-2.5 dark:bg-slate-800/50 text-center">
+                  <div>
+                    <p className="text-[10px] uppercase font-semibold text-slate-400 tracking-wider">Principal</p>
+                    <p className="font-mono text-xs font-semibold text-slate-700 dark:text-slate-300 mt-0.5">
                       {formatBDT(loan.principal)}
-                    </td>
-                    <td className="px-5 py-3 text-right font-mono font-bold text-slate-900 dark:text-white">
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-[10px] uppercase font-semibold text-slate-400 tracking-wider">Outstanding</p>
+                    <p className="font-mono text-xs font-bold text-slate-900 dark:text-white mt-0.5">
                       {formatBDT(loan.outstandingPrincipal)}
-                    </td>
-                    <td className="px-5 py-3">
-                      <StatusBadge status={loan.status} />
-                    </td>
-                    <td className="px-5 py-3 text-right">
-                      {loan.status === 'active' && (
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          className="text-xs"
-                          onClick={() => {
-                            setSelectedLoan(loan);
-                            setRepayPrincipal((loan.outstandingPrincipal / 100).toFixed(2));
-                            setIsRepayOpen(true);
-                          }}
-                        >
-                          Repay / Collect
-                        </Button>
-                      )}
-                    </td>
+                    </p>
+                  </div>
+                </div>
+
+                {loan.status === 'active' && (
+                  <Button
+                    size="sm"
+                    className="w-full text-xs font-semibold h-9"
+                    onClick={() => {
+                      setSelectedLoan(loan);
+                      setRepayPrincipal((loan.outstandingPrincipal / 100).toFixed(2));
+                      setIsRepayOpen(true);
+                    }}
+                  >
+                    Repay / Collect
+                  </Button>
+                )}
+              </div>
+            ))}
+          </div>
+
+          {/* Desktop Table View (Visible on >= md) */}
+          <Card className="hidden md:block overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="w-full min-w-[760px] text-left text-sm">
+                <thead className="bg-slate-50 text-xs uppercase font-semibold text-slate-500 border-b border-slate-100 dark:bg-slate-800/40 dark:border-slate-800">
+                  <tr>
+                    <th className="px-5 py-3.5">Loan ID</th>
+                    <th className="px-5 py-3.5">Direction & Party</th>
+                    <th className="px-5 py-3.5">Due Date & Term</th>
+                    <th className="px-5 py-3.5 text-right">Original Principal</th>
+                    <th className="px-5 py-3.5 text-right">Outstanding</th>
+                    <th className="px-5 py-3.5">Status</th>
+                    <th className="px-5 py-3.5 text-right">Actions</th>
                   </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
-      </Card>
+                </thead>
+                <tbody className="divide-y divide-slate-100 dark:divide-slate-800 text-xs">
+                  {loans.map((loan) => (
+                    <tr key={loan._id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30">
+                      <td className="px-5 py-3 font-mono font-bold text-slate-900 dark:text-white">
+                        {loan.loanNumber}
+                      </td>
+                      <td className="px-5 py-3">
+                        <span className="font-semibold text-slate-800 dark:text-slate-200 block">
+                          {loan.partyName}
+                        </span>
+                        <span className="capitalize text-[11px] text-slate-400">
+                          {loan.direction === 'taken' ? 'Borrowed (Liability)' : 'Lent Out (Asset)'}
+                        </span>
+                      </td>
+                      <td className="px-5 py-3 text-slate-500">
+                        Due: {formatDate(loan.dueDate)} ({loan.termMonths} mo, {loan.interestRate}% interest)
+                      </td>
+                      <td className="px-5 py-3 text-right font-mono font-semibold">
+                        {formatBDT(loan.principal)}
+                      </td>
+                      <td className="px-5 py-3 text-right font-mono font-bold text-slate-900 dark:text-white">
+                        {formatBDT(loan.outstandingPrincipal)}
+                      </td>
+                      <td className="px-5 py-3">
+                        <StatusBadge status={loan.status} />
+                      </td>
+                      <td className="px-5 py-3 text-right">
+                        {loan.status === 'active' && (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="text-xs"
+                            onClick={() => {
+                              setSelectedLoan(loan);
+                              setRepayPrincipal((loan.outstandingPrincipal / 100).toFixed(2));
+                              setIsRepayOpen(true);
+                            }}
+                          >
+                            Repay / Collect
+                          </Button>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </Card>
+        </>
+      )}
 
       {/* Create Loan Modal */}
       {isCreateOpen && (

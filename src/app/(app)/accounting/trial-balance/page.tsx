@@ -86,10 +86,67 @@ export default function TrialBalancePage() {
             )}
           </div>
 
-          {/* Table */}
-          <Card>
+          {/* Mobile Trial Balance Cards (Visible on phones) */}
+          <div className="block md:hidden space-y-2.5">
+            {report.rows.map((row: any) => (
+              <div
+                key={row.accountId}
+                className="rounded-2xl border border-slate-200/80 bg-white p-3.5 shadow-sm dark:border-slate-800 dark:bg-slate-900 space-y-2"
+              >
+                <div className="flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-1.5">
+                    <span className="font-mono text-xs font-bold bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded text-slate-800 dark:text-slate-200">
+                      {row.code}
+                    </span>
+                    <span className="font-semibold text-xs text-slate-900 dark:text-white">
+                      {row.name}
+                    </span>
+                  </div>
+                  <span className="text-[10px] uppercase font-semibold text-slate-400">
+                    {row.type}
+                  </span>
+                </div>
+                <div className="grid grid-cols-2 gap-2 rounded-xl bg-slate-50 p-2 dark:bg-slate-800/50 text-center text-xs">
+                  <div>
+                    <span className="text-[10px] uppercase font-semibold text-slate-400 block">Debit</span>
+                    <span className="font-mono font-semibold text-slate-900 dark:text-white">
+                      {row.debitBalance > 0 ? formatBDT(row.debitBalance) : '—'}
+                    </span>
+                  </div>
+                  <div>
+                    <span className="text-[10px] uppercase font-semibold text-slate-400 block">Credit</span>
+                    <span className="font-mono font-semibold text-slate-900 dark:text-white">
+                      {row.creditBalance > 0 ? formatBDT(row.creditBalance) : '—'}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            ))}
+
+            {/* Mobile Total Card */}
+            <div className="rounded-2xl bg-slate-900 p-4 text-white dark:bg-slate-800 space-y-2 shadow-lg">
+              <span className="text-xs uppercase font-semibold text-slate-400 block">Total Ledger Balance</span>
+              <div className="grid grid-cols-2 gap-2 text-center">
+                <div>
+                  <span className="text-[10px] text-slate-400 block uppercase">Total Debit</span>
+                  <span className="font-mono text-sm font-bold text-emerald-400">
+                    {formatBDT(report.totalDebitBalance)}
+                  </span>
+                </div>
+                <div>
+                  <span className="text-[10px] text-slate-400 block uppercase">Total Credit</span>
+                  <span className="font-mono text-sm font-bold text-emerald-400">
+                    {formatBDT(report.totalCreditBalance)}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Desktop Table View (Visible on >= md) */}
+          <Card className="hidden md:block overflow-hidden">
             <div className="overflow-x-auto">
-              <table className="w-full text-left text-sm">
+              <table className="w-full min-w-[650px] text-left text-sm">
                 <thead className="bg-slate-50/80 text-xs font-semibold text-slate-500 uppercase tracking-wider border-b border-slate-200 dark:bg-slate-800/50 dark:border-slate-800">
                   <tr>
                     <th className="px-5 py-3.5">Code</th>

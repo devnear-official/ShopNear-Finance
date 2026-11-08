@@ -196,40 +196,29 @@ export function DashboardView() {
             {inv.recentHistory.length === 0 ? (
               <p className="py-6 text-center text-sm text-slate-400">No activity recorded yet.</p>
             ) : (
-              <div className="overflow-x-auto">
-                <table className="w-full text-left text-sm">
-                  <thead className="border-b bg-slate-50 text-xs uppercase text-slate-500 dark:bg-slate-800">
-                    <tr>
-                      <th className="px-4 py-3">Date</th>
-                      <th className="px-4 py-3">Type</th>
-                      <th className="px-4 py-3">Description</th>
-                      <th className="px-4 py-3 text-right">Amount (৳)</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                    {inv.recentHistory.map((item: any) => (
-                      <tr key={item.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/50">
-                        <td className="px-4 py-3 text-slate-600 dark:text-slate-300">
-                          {formatDate(item.date)}
-                        </td>
-                        <td className="px-4 py-3">
-                          <span
-                            className={`inline-flex rounded-full px-2 py-0.5 text-xs font-semibold ${
-                              item.type === 'investment'
-                                ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300'
-                                : item.type === 'withdrawal'
-                                ? 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300'
-                                : 'bg-purple-100 text-purple-800 dark:bg-purple-950 dark:text-purple-300'
-                            }`}
-                          >
-                            {item.type.replace('_', ' ')}
-                          </span>
-                        </td>
-                        <td className="px-4 py-3 font-medium text-slate-800 dark:text-slate-200">
-                          {item.description}
-                        </td>
-                        <td
-                          className={`px-4 py-3 text-right font-semibold ${
+              <>
+                {/* Mobile Cards (Visible on phones) */}
+                <div className="block md:hidden divide-y divide-slate-100 dark:divide-slate-800">
+                  {inv.recentHistory.map((item: any) => (
+                    <div key={item.id} className="py-3 space-y-1.5">
+                      <div className="flex items-center justify-between">
+                        <span
+                          className={`inline-flex rounded-full px-2 py-0.5 text-[10px] font-semibold ${
+                            item.type === 'investment'
+                              ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300'
+                              : item.type === 'withdrawal'
+                              ? 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300'
+                              : 'bg-purple-100 text-purple-800 dark:bg-purple-950 dark:text-purple-300'
+                          }`}
+                        >
+                          {item.type.replace('_', ' ')}
+                        </span>
+                        <span className="text-[11px] text-slate-400">{formatDate(item.date)}</span>
+                      </div>
+                      <div className="flex items-center justify-between text-xs">
+                        <span className="font-medium text-slate-800 dark:text-slate-200">{item.description}</span>
+                        <span
+                          className={`font-mono font-bold ${
                             item.type === 'investment' || item.type === 'profit_allocation'
                               ? 'text-emerald-600 dark:text-emerald-400'
                               : 'text-amber-600 dark:text-amber-400'
@@ -237,12 +226,61 @@ export function DashboardView() {
                         >
                           {item.type === 'withdrawal' ? '-' : '+'}
                           {formatBDT(item.amountPaisa)}
-                        </td>
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Desktop Table (Visible on >= md) */}
+                <div className="hidden md:block overflow-x-auto">
+                  <table className="w-full min-w-[550px] text-left text-sm">
+                    <thead className="border-b bg-slate-50 text-xs uppercase text-slate-500 dark:bg-slate-800">
+                      <tr>
+                        <th className="px-4 py-3">Date</th>
+                        <th className="px-4 py-3">Type</th>
+                        <th className="px-4 py-3">Description</th>
+                        <th className="px-4 py-3 text-right">Amount (৳)</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                      {inv.recentHistory.map((item: any) => (
+                        <tr key={item.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/50">
+                          <td className="px-4 py-3 text-slate-600 dark:text-slate-300">
+                            {formatDate(item.date)}
+                          </td>
+                          <td className="px-4 py-3">
+                            <span
+                              className={`inline-flex rounded-full px-2 py-0.5 text-xs font-semibold ${
+                                item.type === 'investment'
+                                  ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300'
+                                  : item.type === 'withdrawal'
+                                  ? 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300'
+                                  : 'bg-purple-100 text-purple-800 dark:bg-purple-950 dark:text-purple-300'
+                              }`}
+                            >
+                              {item.type.replace('_', ' ')}
+                            </span>
+                          </td>
+                          <td className="px-4 py-3 font-medium text-slate-800 dark:text-slate-200">
+                            {item.description}
+                          </td>
+                          <td
+                            className={`px-4 py-3 text-right font-semibold ${
+                              item.type === 'investment' || item.type === 'profit_allocation'
+                                ? 'text-emerald-600 dark:text-emerald-400'
+                                : 'text-amber-600 dark:text-amber-400'
+                            }`}
+                          >
+                            {item.type === 'withdrawal' ? '-' : '+'}
+                            {formatBDT(item.amountPaisa)}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </>
             )}
           </CardContent>
         </Card>

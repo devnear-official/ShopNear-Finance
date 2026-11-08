@@ -5,7 +5,7 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { MoneyText } from '@/components/shared/money-text';
-import { ArrowLeftRight, CheckCircle2, AlertCircle } from 'lucide-react';
+import { ArrowLeftRight, ArrowRight, CheckCircle2, AlertCircle } from 'lucide-react';
 import { toPaisa, formatBDT } from '@/lib/money';
 import { formatDate } from '@/lib/utils';
 import { toast } from 'sonner';
@@ -199,56 +199,79 @@ export default function TransfersPage() {
         </Card>
 
         {/* Transfer History */}
-        <Card className="lg:col-span-2">
+        <Card className="lg:col-span-2 overflow-hidden">
           <CardHeader>
             <CardTitle className="text-base font-bold">Transfer History</CardTitle>
           </CardHeader>
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-sm">
-              <thead className="bg-slate-50 text-xs font-semibold text-slate-500 uppercase tracking-wider border-b border-slate-100 dark:bg-slate-800/40 dark:border-slate-800">
-                <tr>
-                  <th className="px-4 py-3">Date</th>
-                  <th className="px-4 py-3">From</th>
-                  <th className="px-4 py-3">To</th>
-                  <th className="px-4 py-3 text-right">Amount</th>
-                  <th className="px-4 py-3 text-right">Fee</th>
-                  <th className="px-4 py-3">Reference</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100 dark:divide-slate-800 text-xs">
-                {isLoading ? (
-                  <tr>
-                    <td colSpan={6} className="px-4 py-8 text-center text-slate-400">Loading transfers...</td>
-                  </tr>
-                ) : transfers.length === 0 ? (
-                  <tr>
-                    <td colSpan={6} className="px-4 py-8 text-center text-slate-400">No transfers recorded yet.</td>
-                  </tr>
-                ) : (
-                  transfers.map((t) => (
-                    <tr key={t._id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30">
-                      <td className="px-4 py-3 text-slate-500">{formatDate(t.date)}</td>
-                      <td className="px-4 py-3 font-medium text-slate-800 dark:text-slate-200">
-                        {t.fromAccountId?.name || 'Account'}
-                      </td>
-                      <td className="px-4 py-3 font-medium text-slate-800 dark:text-slate-200">
-                        {t.toAccountId?.name || 'Account'}
-                      </td>
-                      <td className="px-4 py-3 text-right font-mono font-bold text-emerald-600">
+
+          {isLoading ? (
+            <div className="p-8 text-center text-xs text-slate-400">Loading transfers...</div>
+          ) : transfers.length === 0 ? (
+            <div className="p-8 text-center text-xs text-slate-400">No internal transfers recorded yet.</div>
+          ) : (
+            <>
+              {/* Mobile Card List (Visible on phones) */}
+              <div className="block md:hidden divide-y divide-slate-100 dark:divide-slate-800">
+                {transfers.map((t) => (
+                  <div key={t._id} className="p-4 space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs text-slate-400">{formatDate(t.date)}</span>
+                      <span className="font-mono text-sm font-bold text-emerald-600 dark:text-emerald-400">
                         {formatBDT(t.amount)}
-                      </td>
-                      <td className="px-4 py-3 text-right font-mono text-slate-500">
-                        {t.fee > 0 ? formatBDT(t.fee) : '—'}
-                      </td>
-                      <td className="px-4 py-3 font-mono text-slate-400">
-                        {t.reference || '—'}
-                      </td>
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2 text-xs font-medium text-slate-800 dark:text-slate-200">
+                      <span>{t.fromAccountId?.name || 'Account'}</span>
+                      <ArrowRight className="h-3 w-3 text-slate-400 shrink-0" />
+                      <span>{t.toAccountId?.name || 'Account'}</span>
+                    </div>
+                    <div className="flex items-center justify-between text-[11px] text-slate-400 pt-1">
+                      <span>Fee: {t.fee > 0 ? formatBDT(t.fee) : '৳0.00'}</span>
+                      <span>Ref: {t.reference || '—'}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Desktop Table View (Visible on >= md) */}
+              <div className="hidden md:block overflow-x-auto">
+                <table className="w-full min-w-[620px] text-left text-sm">
+                  <thead className="bg-slate-50 text-xs font-semibold text-slate-500 uppercase tracking-wider border-b border-slate-100 dark:bg-slate-800/40 dark:border-slate-800">
+                    <tr>
+                      <th className="px-4 py-3">Date</th>
+                      <th className="px-4 py-3">From</th>
+                      <th className="px-4 py-3">To</th>
+                      <th className="px-4 py-3 text-right">Amount</th>
+                      <th className="px-4 py-3 text-right">Fee</th>
+                      <th className="px-4 py-3">Reference</th>
                     </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100 dark:divide-slate-800 text-xs">
+                    {transfers.map((t) => (
+                      <tr key={t._id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30">
+                        <td className="px-4 py-3 text-slate-500">{formatDate(t.date)}</td>
+                        <td className="px-4 py-3 font-medium text-slate-800 dark:text-slate-200">
+                          {t.fromAccountId?.name || 'Account'}
+                        </td>
+                        <td className="px-4 py-3 font-medium text-slate-800 dark:text-slate-200">
+                          {t.toAccountId?.name || 'Account'}
+                        </td>
+                        <td className="px-4 py-3 text-right font-mono font-bold text-emerald-600">
+                          {formatBDT(t.amount)}
+                        </td>
+                        <td className="px-4 py-3 text-right font-mono text-slate-500">
+                          {t.fee > 0 ? formatBDT(t.fee) : '—'}
+                        </td>
+                        <td className="px-4 py-3 font-mono text-slate-400">
+                          {t.reference || '—'}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </>
+          )}
         </Card>
       </div>
     </div>

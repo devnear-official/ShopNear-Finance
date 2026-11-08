@@ -121,8 +121,8 @@ export default function ApprovalsPage() {
                     </p>
                   </div>
 
-                  <div className="flex items-center gap-4">
-                    <div className="text-right">
+                  <div className="flex items-center justify-between md:justify-end gap-4 w-full md:w-auto pt-2 md:pt-0 border-t md:border-t-0 border-slate-100 dark:border-slate-800">
+                    <div className="text-left md:text-right">
                       <span className="text-xs text-slate-400 block">Amount</span>
                       <span className="font-mono font-bold text-base text-slate-900 dark:text-white">
                         {formatBDT(trx.amount)}

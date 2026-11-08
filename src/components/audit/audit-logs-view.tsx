@@ -167,69 +167,118 @@ export function AuditLogsView() {
           ) : logs.length === 0 ? (
             <div className="p-8 text-center text-sm text-slate-400">No audit logs matching criteria.</div>
           ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs">
-                <thead className="border-b bg-slate-50 uppercase text-slate-500 dark:bg-slate-800/60">
-                  <tr>
-                    <th className="px-4 py-3">Timestamp</th>
-                    <th className="px-4 py-3">Actor</th>
-                    <th className="px-4 py-3">Action</th>
-                    <th className="px-4 py-3">Entity</th>
-                    <th className="px-4 py-3">IP Address</th>
-                    <th className="px-4 py-3 text-right">Details</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                  {logs.map((log) => (
-                    <tr key={log.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/40 transition-colors">
-                      <td className="px-4 py-3 font-mono text-slate-500">
+            <>
+              {/* Mobile Card List (Visible on phones) */}
+              <div className="block md:hidden divide-y divide-slate-100 dark:divide-slate-800">
+                {logs.map((log) => (
+                  <div key={log.id} className="p-4 space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="inline-flex items-center rounded-md bg-slate-100 px-2 py-0.5 font-mono text-[11px] font-semibold text-slate-800 dark:bg-slate-800 dark:text-slate-200">
+                        {log.action}
+                      </span>
+                      <span className="font-mono text-[11px] text-slate-400">
                         {formatDateTime(log.at)}
-                      </td>
-                      <td className="px-4 py-3">
-                        {log.actor ? (
-                          <div>
-                            <span className="font-semibold text-slate-900 dark:text-white">
-                              {log.actor.name}
-                            </span>
-                            <span className="block text-[10px] text-slate-400">{log.actor.email}</span>
-                          </div>
-                        ) : (
-                          <span className="text-slate-400">System / Anonymous</span>
-                        )}
-                      </td>
-                      <td className="px-4 py-3">
-                        <span className="inline-flex items-center rounded-md bg-slate-100 px-2 py-0.5 font-mono text-[11px] font-semibold text-slate-800 dark:bg-slate-800 dark:text-slate-200">
-                          {log.action}
+                      </span>
+                    </div>
+
+                    <div className="flex items-center justify-between text-xs">
+                      <div>
+                        <span className="font-semibold text-slate-900 dark:text-white">
+                          {log.actor?.name || 'System / Anonymous'}
                         </span>
-                      </td>
-                      <td className="px-4 py-3">
+                        {log.actor?.email && (
+                          <span className="block text-[10px] text-slate-400">{log.actor.email}</span>
+                        )}
+                      </div>
+                      <div className="text-right">
                         <span className="font-medium text-slate-700 dark:text-slate-300">
                           {log.entityType}
                         </span>
-                        {log.entityId && (
-                          <span className="block font-mono text-[10px] text-slate-400 truncate max-w-[120px]">
-                            {log.entityId}
-                          </span>
-                        )}
-                      </td>
-                      <td className="px-4 py-3 font-mono text-slate-500">
-                        {log.ip || '-'}
-                      </td>
-                      <td className="px-4 py-3 text-right">
-                        {(log.before || log.after) && (
-                          <button
-                            onClick={() => setSelectedLog(log)}
-                            className="inline-flex items-center gap-1 rounded-md border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-2 py-1 text-[11px] font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800"
-                          >
-                            <Eye className="h-3.5 w-3.5 text-emerald-600" /> Diff
-                          </button>
-                        )}
-                      </td>
+                        <span className="block font-mono text-[10px] text-slate-400">
+                          {log.ip || '-'}
+                        </span>
+                      </div>
+                    </div>
+
+                    {(log.before || log.after) && (
+                      <div className="pt-1 flex justify-end">
+                        <button
+                          onClick={() => setSelectedLog(log)}
+                          className="inline-flex items-center gap-1 rounded-md border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-2.5 py-1 text-xs font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800"
+                        >
+                          <Eye className="h-3.5 w-3.5 text-emerald-600" /> View JSON Diff
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+
+              {/* Desktop Table View (Visible on >= md) */}
+              <div className="hidden md:block overflow-x-auto">
+                <table className="w-full min-w-[700px] text-left text-xs">
+                  <thead className="border-b bg-slate-50 uppercase text-slate-500 dark:bg-slate-800/60">
+                    <tr>
+                      <th className="px-4 py-3">Timestamp</th>
+                      <th className="px-4 py-3">Actor</th>
+                      <th className="px-4 py-3">Action</th>
+                      <th className="px-4 py-3">Entity</th>
+                      <th className="px-4 py-3">IP Address</th>
+                      <th className="px-4 py-3 text-right">Details</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                    {logs.map((log) => (
+                      <tr key={log.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/40 transition-colors">
+                        <td className="px-4 py-3 font-mono text-slate-500">
+                          {formatDateTime(log.at)}
+                        </td>
+                        <td className="px-4 py-3">
+                          {log.actor ? (
+                            <div>
+                              <span className="font-semibold text-slate-900 dark:text-white">
+                                {log.actor.name}
+                              </span>
+                              <span className="block text-[10px] text-slate-400">{log.actor.email}</span>
+                            </div>
+                          ) : (
+                            <span className="text-slate-400">System / Anonymous</span>
+                          )}
+                        </td>
+                        <td className="px-4 py-3">
+                          <span className="inline-flex items-center rounded-md bg-slate-100 px-2 py-0.5 font-mono text-[11px] font-semibold text-slate-800 dark:bg-slate-800 dark:text-slate-200">
+                            {log.action}
+                          </span>
+                        </td>
+                        <td className="px-4 py-3">
+                          <span className="font-medium text-slate-700 dark:text-slate-300">
+                            {log.entityType}
+                          </span>
+                          {log.entityId && (
+                            <span className="block font-mono text-[10px] text-slate-400 truncate max-w-[120px]">
+                              {log.entityId}
+                            </span>
+                          )}
+                        </td>
+                        <td className="px-4 py-3 font-mono text-slate-500">
+                          {log.ip || '-'}
+                        </td>
+                        <td className="px-4 py-3 text-right">
+                          {(log.before || log.after) && (
+                            <button
+                              onClick={() => setSelectedLog(log)}
+                              className="inline-flex items-center gap-1 rounded-md border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-2 py-1 text-[11px] font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800"
+                            >
+                              <Eye className="h-3.5 w-3.5 text-emerald-600" /> Diff
+                            </button>
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </>
           )}
 
           {/* Pagination */}

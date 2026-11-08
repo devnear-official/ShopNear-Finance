@@ -94,73 +94,114 @@ export default function ChartOfAccountsPage() {
         </CardContent>
       </Card>
 
-      {/* Table view */}
-      <Card>
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-sm">
-            <thead className="bg-slate-50/80 text-xs font-semibold text-slate-500 uppercase tracking-wider border-b border-slate-200 dark:bg-slate-800/50 dark:border-slate-800">
-              <tr>
-                <th className="px-5 py-3.5">Code</th>
-                <th className="px-5 py-3.5">Account Name</th>
-                <th className="px-5 py-3.5">Type</th>
-                <th className="px-5 py-3.5">Sub-Type</th>
-                <th className="px-5 py-3.5">Normal Balance</th>
-                <th className="px-5 py-3.5 text-center">Posting Allowed</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-              {isLoading ? (
-                <tr>
-                  <td colSpan={6} className="px-5 py-8 text-center text-slate-400">
-                    Loading chart of accounts...
-                  </td>
-                </tr>
-              ) : filtered.length === 0 ? (
-                <tr>
-                  <td colSpan={6} className="px-5 py-8 text-center text-slate-400">
-                    No accounts match the selected filter.
-                  </td>
-                </tr>
-              ) : (
-                filtered.map((acc) => (
-                  <tr key={acc._id} className="hover:bg-slate-50/60 dark:hover:bg-slate-800/40">
-                    <td className="px-5 py-3 font-mono font-bold text-slate-900 dark:text-slate-100">
+      {/* Display Accounts */}
+      {isLoading ? (
+        <Card className="p-8 text-center text-slate-400">
+          <p className="text-sm">Loading chart of accounts...</p>
+        </Card>
+      ) : filtered.length === 0 ? (
+        <Card className="p-8 text-center text-slate-400 border-dashed">
+          <p className="text-sm">No accounts match the selected filter.</p>
+        </Card>
+      ) : (
+        <>
+          {/* Mobile Card List (Visible on phones) */}
+          <div className="block md:hidden space-y-2.5">
+            {filtered.map((acc) => (
+              <div
+                key={acc._id}
+                className="rounded-2xl border border-slate-200/80 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900 space-y-2.5"
+              >
+                <div className="flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-2">
+                    <span className="font-mono text-xs font-bold bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded text-slate-900 dark:text-white">
                       {acc.code}
-                    </td>
-                    <td className="px-5 py-3 font-semibold text-slate-800 dark:text-slate-200">
+                    </span>
+                    <span className="font-semibold text-sm text-slate-800 dark:text-slate-200">
                       {acc.name}
-                    </td>
-                    <td className="px-5 py-3">
-                      <span className={`inline-flex rounded-lg px-2.5 py-1 text-xs font-bold uppercase tracking-wider ${typeColor[acc.type] || ''}`}>
-                        {acc.type}
+                    </span>
+                  </div>
+                  <span className={`inline-flex rounded-lg px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider ${typeColor[acc.type] || ''}`}>
+                    {acc.type}
+                  </span>
+                </div>
+
+                <div className="flex items-center justify-between text-xs text-slate-500 border-t border-slate-100 dark:border-slate-800/80 pt-2">
+                  <span className="capitalize">{acc.subType.replace(/_/g, ' ')}</span>
+                  <div className="flex items-center gap-3">
+                    <span className="font-mono text-[11px] uppercase font-semibold text-slate-600 dark:text-slate-300">
+                      Normal: {acc.normalBalance}
+                    </span>
+                    {acc.allowPosting ? (
+                      <span className="inline-flex items-center text-[11px] text-emerald-600 font-medium">
+                        <CheckCircle2 className="h-3.5 w-3.5 mr-0.5 text-emerald-500" /> Postable
                       </span>
-                    </td>
-                    <td className="px-5 py-3 text-slate-500 capitalize">
-                      {acc.subType.replace(/_/g, ' ')}
-                    </td>
-                    <td className="px-5 py-3">
-                      <span className="font-mono text-xs uppercase font-semibold text-slate-700 dark:text-slate-300">
-                        {acc.normalBalance}
+                    ) : (
+                      <span className="inline-flex items-center text-[11px] text-slate-400 font-medium">
+                        <XCircle className="h-3.5 w-3.5 mr-0.5 text-slate-400" /> Parent
                       </span>
-                    </td>
-                    <td className="px-5 py-3 text-center">
-                      {acc.allowPosting ? (
-                        <span className="inline-flex items-center text-xs text-emerald-600 font-medium">
-                          <CheckCircle2 className="h-4 w-4 mr-1 text-emerald-500" /> Yes
-                        </span>
-                      ) : (
-                        <span className="inline-flex items-center text-xs text-slate-400 font-medium">
-                          <XCircle className="h-4 w-4 mr-1 text-slate-400" /> Parent
-                        </span>
-                      )}
-                    </td>
+                    )}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Desktop Table View (Visible on >= md) */}
+          <Card className="hidden md:block overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="w-full min-w-[700px] text-left text-sm">
+                <thead className="bg-slate-50/80 text-xs font-semibold text-slate-500 uppercase tracking-wider border-b border-slate-200 dark:bg-slate-800/50 dark:border-slate-800">
+                  <tr>
+                    <th className="px-5 py-3.5">Code</th>
+                    <th className="px-5 py-3.5">Account Name</th>
+                    <th className="px-5 py-3.5">Type</th>
+                    <th className="px-5 py-3.5">Sub-Type</th>
+                    <th className="px-5 py-3.5">Normal Balance</th>
+                    <th className="px-5 py-3.5 text-center">Posting Allowed</th>
                   </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
-      </Card>
+                </thead>
+                <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                  {filtered.map((acc) => (
+                    <tr key={acc._id} className="hover:bg-slate-50/60 dark:hover:bg-slate-800/40">
+                      <td className="px-5 py-3 font-mono font-bold text-slate-900 dark:text-slate-100">
+                        {acc.code}
+                      </td>
+                      <td className="px-5 py-3 font-semibold text-slate-800 dark:text-slate-200">
+                        {acc.name}
+                      </td>
+                      <td className="px-5 py-3">
+                        <span className={`inline-flex rounded-lg px-2.5 py-1 text-xs font-bold uppercase tracking-wider ${typeColor[acc.type] || ''}`}>
+                          {acc.type}
+                        </span>
+                      </td>
+                      <td className="px-5 py-3 text-slate-500 capitalize">
+                        {acc.subType.replace(/_/g, ' ')}
+                      </td>
+                      <td className="px-5 py-3">
+                        <span className="font-mono text-xs uppercase font-semibold text-slate-700 dark:text-slate-300">
+                          {acc.normalBalance}
+                        </span>
+                      </td>
+                      <td className="px-5 py-3 text-center">
+                        {acc.allowPosting ? (
+                          <span className="inline-flex items-center text-xs text-emerald-600 font-medium">
+                            <CheckCircle2 className="h-4 w-4 mr-1 text-emerald-500" /> Yes
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center text-xs text-slate-400 font-medium">
+                            <XCircle className="h-4 w-4 mr-1 text-slate-400" /> Parent
+                          </span>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </Card>
+        </>
+      )}
     </div>
   );
 }

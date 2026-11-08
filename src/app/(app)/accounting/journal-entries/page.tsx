@@ -364,8 +364,8 @@ export default function JournalEntriesPage() {
 
                   {/* Expanded Lines */}
                   {isExpanded && (
-                    <div className="mt-4 pt-3 border-t border-slate-100 dark:border-slate-800">
-                      <table className="w-full text-xs">
+                    <div className="mt-4 pt-3 border-t border-slate-100 dark:border-slate-800 overflow-x-auto">
+                      <table className="w-full min-w-[520px] text-xs">
                         <thead className="text-slate-400 uppercase font-semibold">
                           <tr>
                             <th className="text-left pb-2">Account</th>

@@ -121,50 +121,88 @@ export default function GeneralLedgerPage() {
             </div>
           </CardHeader>
 
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-sm">
-              <thead className="bg-slate-50/70 text-xs font-semibold text-slate-500 uppercase tracking-wider border-b border-slate-100 dark:bg-slate-800/40 dark:border-slate-800">
-                <tr>
-                  <th className="px-5 py-3">Date</th>
-                  <th className="px-5 py-3">Entry #</th>
-                  <th className="px-5 py-3">Description</th>
-                  <th className="px-5 py-3 text-right">Debit</th>
-                  <th className="px-5 py-3 text-right">Credit</th>
-                  <th className="px-5 py-3 text-right">Running Balance</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100 dark:divide-slate-800 text-xs">
-                {ledgerData.entries.length === 0 ? (
-                  <tr>
-                    <td colSpan={6} className="px-5 py-8 text-center text-slate-400">
-                      No ledger entries recorded for this account in the selected period.
-                    </td>
-                  </tr>
-                ) : (
-                  ledgerData.entries.map((item: any) => (
-                    <tr key={item.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30">
-                      <td className="px-5 py-3 text-slate-500">{formatDate(item.date)}</td>
-                      <td className="px-5 py-3 font-mono font-medium text-slate-900 dark:text-white">
+          {ledgerData.entries.length === 0 ? (
+            <div className="p-8 text-center text-xs text-slate-400">
+              No ledger entries recorded for this account in the selected period.
+            </div>
+          ) : (
+            <>
+              {/* Mobile Card List (Visible on phones) */}
+              <div className="block md:hidden divide-y divide-slate-100 dark:divide-slate-800">
+                {ledgerData.entries.map((item: any) => (
+                  <div key={item.id} className="p-4 space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="font-mono text-xs font-bold text-slate-900 dark:text-white">
                         {item.entryNumber}
-                      </td>
-                      <td className="px-5 py-3 text-slate-700 dark:text-slate-300 font-medium">
-                        {item.description}
-                      </td>
-                      <td className="px-5 py-3 text-right font-mono font-semibold">
-                        {item.debit > 0 ? formatBDT(item.debit) : '—'}
-                      </td>
-                      <td className="px-5 py-3 text-right font-mono font-semibold">
-                        {item.credit > 0 ? formatBDT(item.credit) : '—'}
-                      </td>
-                      <td className="px-5 py-3 text-right font-mono font-bold text-slate-900 dark:text-white">
-                        {formatBDT(item.runningBalance)}
-                      </td>
+                      </span>
+                      <span className="text-[11px] text-slate-400">{formatDate(item.date)}</span>
+                    </div>
+
+                    <p className="text-xs font-medium text-slate-800 dark:text-slate-200">{item.description}</p>
+
+                    <div className="grid grid-cols-3 gap-2 rounded-xl bg-slate-50 p-2 dark:bg-slate-800/50 text-center text-[11px]">
+                      <div>
+                        <span className="text-[10px] uppercase font-semibold text-slate-400 block">Debit</span>
+                        <span className="font-mono font-semibold text-slate-800 dark:text-slate-200">
+                          {item.debit > 0 ? formatBDT(item.debit) : '—'}
+                        </span>
+                      </div>
+                      <div>
+                        <span className="text-[10px] uppercase font-semibold text-slate-400 block">Credit</span>
+                        <span className="font-mono font-semibold text-slate-800 dark:text-slate-200">
+                          {item.credit > 0 ? formatBDT(item.credit) : '—'}
+                        </span>
+                      </div>
+                      <div>
+                        <span className="text-[10px] uppercase font-semibold text-slate-400 block">Balance</span>
+                        <span className="font-mono font-bold text-slate-900 dark:text-white">
+                          {formatBDT(item.runningBalance)}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Desktop Table View (Visible on >= md) */}
+              <div className="hidden md:block overflow-x-auto">
+                <table className="w-full min-w-[700px] text-left text-sm">
+                  <thead className="bg-slate-50/70 text-xs font-semibold text-slate-500 uppercase tracking-wider border-b border-slate-100 dark:bg-slate-800/40 dark:border-slate-800">
+                    <tr>
+                      <th className="px-5 py-3">Date</th>
+                      <th className="px-5 py-3">Entry #</th>
+                      <th className="px-5 py-3">Description</th>
+                      <th className="px-5 py-3 text-right">Debit</th>
+                      <th className="px-5 py-3 text-right">Credit</th>
+                      <th className="px-5 py-3 text-right">Running Balance</th>
                     </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100 dark:divide-slate-800 text-xs">
+                    {ledgerData.entries.map((item: any) => (
+                      <tr key={item.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30">
+                        <td className="px-5 py-3 text-slate-500">{formatDate(item.date)}</td>
+                        <td className="px-5 py-3 font-mono font-medium text-slate-900 dark:text-white">
+                          {item.entryNumber}
+                        </td>
+                        <td className="px-5 py-3 text-slate-700 dark:text-slate-300 font-medium">
+                          {item.description}
+                        </td>
+                        <td className="px-5 py-3 text-right font-mono font-semibold">
+                          {item.debit > 0 ? formatBDT(item.debit) : '—'}
+                        </td>
+                        <td className="px-5 py-3 text-right font-mono font-semibold">
+                          {item.credit > 0 ? formatBDT(item.credit) : '—'}
+                        </td>
+                        <td className="px-5 py-3 text-right font-mono font-bold text-slate-900 dark:text-white">
+                          {formatBDT(item.runningBalance)}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </>
+          )}
         </Card>
       )}
     </div>
