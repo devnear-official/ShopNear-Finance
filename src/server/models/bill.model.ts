@@ -11,6 +11,7 @@ export interface IBill extends Document {
   paidAmount: number; // integer paisa
   status: BillStatus;
   journalEntryId?: Types.ObjectId;
+  attachments?: string[]; // Cloudinary secure URLs
   notes?: string;
   createdBy?: Types.ObjectId;
   createdAt: Date;
@@ -58,6 +59,10 @@ const BillSchema = new Schema<IBill>(
     journalEntryId: {
       type: Schema.Types.ObjectId,
       ref: 'JournalEntry',
+    },
+    attachments: {
+      type: [String],
+      default: [],
     },
     notes: {
       type: String,

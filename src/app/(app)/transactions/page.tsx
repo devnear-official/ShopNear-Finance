@@ -15,10 +15,12 @@ import {
   Filter,
   CheckCircle2,
   Package,
+  Image as ImageIcon,
 } from 'lucide-react';
 import { toPaisa, formatBDT } from '@/lib/money';
 import { formatDate } from '@/lib/utils';
 import { toast } from 'sonner';
+import { InvoiceAttachmentUpload } from '@/components/shared/invoice-attachment-upload';
 
 export default function TransactionsPage() {
   const [transactions, setTransactions] = useState<any[]>([]);
@@ -37,6 +39,7 @@ export default function TransactionsPage() {
   const [paymentMethod, setPaymentMethod] = useState('cash');
   const [partyName, setPartyName] = useState('');
   const [referenceNo, setReferenceNo] = useState('');
+  const [attachments, setAttachments] = useState<string[]>([]);
   const [description, setDescription] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -83,6 +86,7 @@ export default function TransactionsPage() {
           paymentMethod,
           partyName,
           referenceNo,
+          attachments,
           description,
         }),
       });
@@ -99,6 +103,7 @@ export default function TransactionsPage() {
       setDescription('');
       setPartyName('');
       setReferenceNo('');
+      setAttachments([]);
       loadData();
     } catch {
       toast.error('Network error occurred.');
@@ -233,7 +238,24 @@ export default function TransactionsPage() {
                           {trx.description}
                         </span>
                         {trx.partyName && (
-                          <span className="text-[11px] text-slate-400">Party: {trx.partyName}</span>
+                          <span className="text-[11px] text-slate-400 block">Party: {trx.partyName}</span>
+                        )}
+                        {trx.attachments && trx.attachments.length > 0 && (
+                          <div className="flex items-center gap-1.5 mt-1">
+                            {trx.attachments.map((url: string, i: number) => (
+                              <a
+                                key={i}
+                                href={url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="inline-flex items-center gap-1 rounded-md bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800 px-1.5 py-0.5 text-[10px] font-medium text-emerald-700 dark:text-emerald-300 hover:underline"
+                                title="View Cloudinary Invoice Picture"
+                              >
+                                <ImageIcon className="h-3 w-3" />
+                                <span>Receipt #{i + 1}</span>
+                              </a>
+                            ))}
+                          </div>
                         )}
                       </td>
 
@@ -405,6 +427,15 @@ export default function TransactionsPage() {
                   Description / Narration
                 </label>
                 <Input placeholder="E.g., Monthly office internet subscription" value={description} onChange={(e) => setDescription(e.target.value)} required />
+              </div>
+
+              {/* Cloudinary Invoice/Bill Picture Upload */}
+              <div className="pt-1">
+                <InvoiceAttachmentUpload
+                  attachments={attachments}
+                  onChange={setAttachments}
+                  folder="shopnear_finance/transactions"
+                />
               </div>
 
               <div className="flex justify-end gap-3 pt-4 border-t border-slate-100 dark:border-slate-800">

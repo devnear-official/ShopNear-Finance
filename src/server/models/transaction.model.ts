@@ -23,6 +23,7 @@ export interface ITransaction extends Document {
   paymentMethod: string;
   referenceNo?: string;
   invoiceNo?: string;
+  attachments?: string[]; // Cloudinary secure URLs
   description: string;
   status: TransactionStatus;
   journalEntryId?: Types.ObjectId;
@@ -91,6 +92,10 @@ const TransactionSchema = new Schema<ITransaction>(
     invoiceNo: {
       type: String,
       default: '',
+    },
+    attachments: {
+      type: [String],
+      default: [],
     },
     description: {
       type: String,

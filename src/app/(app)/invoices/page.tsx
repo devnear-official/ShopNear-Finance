@@ -6,10 +6,11 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { MoneyText } from '@/components/shared/money-text';
 import { StatusBadge } from '@/components/shared/status-badge';
-import { Receipt, Plus, CheckCircle2 } from 'lucide-react';
+import { Receipt, Plus, CheckCircle2, Image as ImageIcon } from 'lucide-react';
 import { toPaisa, formatBDT } from '@/lib/money';
 import { formatDate } from '@/lib/utils';
 import { toast } from 'sonner';
+import { InvoiceAttachmentUpload } from '@/components/shared/invoice-attachment-upload';
 
 export default function InvoicesPage() {
   const [invoices, setInvoices] = useState<any[]>([]);
@@ -27,6 +28,7 @@ export default function InvoicesPage() {
   const [itemName, setItemName] = useState('');
   const [quantity, setQuantity] = useState('1');
   const [unitPrice, setUnitPrice] = useState('');
+  const [attachments, setAttachments] = useState<string[]>([]);
   const [notes, setNotes] = useState('');
 
   // Payment Form
@@ -79,6 +81,7 @@ export default function InvoicesPage() {
               unitPrice: toPaisa(unitPrice),
             },
           ],
+          attachments,
           notes,
         }),
       });
@@ -91,6 +94,7 @@ export default function InvoicesPage() {
       setIsCreateOpen(false);
       setItemName('');
       setUnitPrice('');
+      setAttachments([]);
       loadData();
     } catch {
       toast.error('Network error occurred.');
@@ -189,7 +193,26 @@ export default function InvoicesPage() {
                         {inv.invoiceNumber}
                       </td>
                       <td className="px-5 py-3 font-semibold text-slate-800 dark:text-slate-200">
-                        {inv.partyId?.name || 'Customer'}
+                        <div>
+                          <span>{inv.partyId?.name || 'Customer'}</span>
+                          {inv.attachments && inv.attachments.length > 0 && (
+                            <div className="flex items-center gap-1.5 mt-1">
+                              {inv.attachments.map((url: string, i: number) => (
+                                <a
+                                  key={i}
+                                  href={url}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="inline-flex items-center gap-1 rounded-md bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800 px-1.5 py-0.5 text-[10px] font-medium text-emerald-700 dark:text-emerald-300 hover:underline"
+                                  title="View Cloudinary Invoice Image"
+                                >
+                                  <ImageIcon className="h-3 w-3" />
+                                  <span>Bill #{i + 1}</span>
+                                </a>
+                              ))}
+                            </div>
+                          )}
+                        </div>
                       </td>
                       <td className="px-5 py-3 text-slate-500">{formatDate(inv.dueDate)}</td>
                       <td className="px-5 py-3 text-right font-mono font-semibold">{formatBDT(inv.total)}</td>
@@ -261,6 +284,15 @@ export default function InvoicesPage() {
                   <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Unit Price (৳ BDT)</label>
                   <Input type="number" step="0.01" placeholder="0.00" value={unitPrice} onChange={(e) => setUnitPrice(e.target.value)} required />
                 </div>
+              </div>
+
+              {/* Cloudinary Invoice Picture Upload */}
+              <div className="pt-1">
+                <InvoiceAttachmentUpload
+                  attachments={attachments}
+                  onChange={setAttachments}
+                  folder="shopnear_finance/invoices"
+                />
               </div>
 
               <div className="flex justify-end gap-3 pt-4 border-t border-slate-100 dark:border-slate-800">

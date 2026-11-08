@@ -28,6 +28,7 @@ export interface CreateTransactionInput {
   paymentMethod?: string;
   referenceNo?: string;
   invoiceNo?: string;
+  attachments?: string[];
   description: string;
   requireApproval?: boolean;
   userId?: string;
@@ -144,6 +145,7 @@ export class TransactionService {
       paymentMethod: input.paymentMethod || 'cash',
       referenceNo: input.referenceNo || '',
       invoiceNo: input.invoiceNo || '',
+      attachments: input.attachments || [],
       description: input.description.trim(),
       status: initialStatus,
       journalEntryId,

@@ -316,6 +316,7 @@ export class BusinessFinanceService {
     items: Array<{ name: string; quantity: number; unitPrice: number }>;
     dueDate?: Date | string;
     notes?: string;
+    attachments?: string[];
     userId?: string;
   }, session?: ClientSession): Promise<IInvoice> {
     await connectDB();
@@ -375,6 +376,7 @@ export class BusinessFinanceService {
       paidAmount: 0,
       status: 'issued',
       journalEntryId: je._id,
+      attachments: input.attachments || [],
       notes: input.notes || '',
       createdBy: input.userId,
     });

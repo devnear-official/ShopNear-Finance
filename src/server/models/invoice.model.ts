@@ -20,6 +20,7 @@ export interface IInvoice extends Document {
   paidAmount: number;
   status: InvoiceStatus;
   journalEntryId?: Types.ObjectId;
+  attachments?: string[]; // Cloudinary secure URLs
   notes?: string;
   createdBy?: Types.ObjectId;
   createdAt: Date;
@@ -82,6 +83,10 @@ const InvoiceSchema = new Schema<IInvoice>(
     journalEntryId: {
       type: Schema.Types.ObjectId,
       ref: 'JournalEntry',
+    },
+    attachments: {
+      type: [String],
+      default: [],
     },
     notes: {
       type: String,

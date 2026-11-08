@@ -18,6 +18,7 @@ const invoiceSchema = z.object({
     })
   ).min(1, 'At least 1 item is required'),
   dueDate: z.string().optional(),
+  attachments: z.array(z.string()).optional(),
   notes: z.string().optional(),
 });
 
