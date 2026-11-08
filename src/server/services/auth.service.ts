@@ -11,8 +11,8 @@ const RESET_SECRET = new TextEncoder().encode(
   process.env.JWT_ACCESS_SECRET || 'shopnear_finance_super_secure_access_secret_key_2026_at_least_32_chars'
 );
 
-const MAX_FAILED_ATTEMPTS = 5;
-const LOCKOUT_MINUTES = 15;
+const MAX_FAILED_ATTEMPTS = 999999; // Rate limit and account lockout disabled
+const LOCKOUT_MINUTES = 0;
 
 export interface LoginParams {
   email: string;
@@ -35,12 +35,11 @@ export class AuthService {
       throw new UnauthorizedError('Invalid email or password');
     }
 
-    // Check account lockout
-    if (user.lockedUntil && user.lockedUntil > new Date()) {
-      const waitMinutes = Math.ceil((user.lockedUntil.getTime() - Date.now()) / (1000 * 60));
-      throw new UnauthorizedError(
-        `Account is temporarily locked due to too many failed attempts. Try again in ${waitMinutes} minute(s).`
-      );
+    // Check account lockout (disabled - auto-clears any previous lockout)
+    if (user.lockedUntil) {
+      user.lockedUntil = undefined;
+      user.failedLoginCount = 0;
+      await user.save();
     }
 
     if (user.status !== 'active') {

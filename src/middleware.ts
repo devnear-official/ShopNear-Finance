@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { ACCESS_TOKEN_COOKIE, REFRESH_TOKEN_COOKIE, verifyAccessToken } from '@/server/auth/jwt';
-import { rateLimiter } from '@/server/security/rate-limiter';
 
 // Public pages that don't require authentication
 const AUTH_PAGES = ['/login', '/forgot-password', '/reset-password'];
@@ -27,36 +26,8 @@ const CSP_DIRECTIVES = [
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
-  // Handle API Rate Limiting (120 req/min per IP)
+  // API requests: Rate limiting is disabled as requested
   if (pathname.startsWith('/api/')) {
-    const forwarded = req.headers.get('x-forwarded-for');
-    const ip = forwarded ? forwarded.split(',')[0].trim() : req.headers.get('x-real-ip') || '127.0.0.1';
-
-    // Except login which has its own strict 5 req / 15 min limiter
-    if (!pathname.startsWith('/api/v1/auth/login')) {
-      const rl = rateLimiter.check(`api:${ip}`, 120, 60 * 1000);
-      if (!rl.allowed) {
-        const rateLimitRes = new NextResponse(
-          JSON.stringify({
-            success: false,
-            message: 'Too many requests. Please throttle your API calls.',
-            code: 'RATE_LIMIT_EXCEEDED',
-          }),
-          {
-            status: 429,
-            headers: {
-              'Content-Type': 'application/json',
-              'Retry-After': rl.retryAfterSec.toString(),
-              'X-RateLimit-Limit': '120',
-              'X-RateLimit-Remaining': '0',
-              'X-RateLimit-Reset': Math.ceil(rl.resetTime / 1000).toString(),
-            },
-          }
-        );
-        return applySecurityHeaders(rateLimitRes);
-      }
-    }
-
     return applySecurityHeaders(NextResponse.next());
   }
 
