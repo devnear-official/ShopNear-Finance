@@ -138,6 +138,19 @@ export default function TransactionsPage() {
     type === 'asset_purchase' ? c.type === 'expense' : c.type === type
   );
 
+  const filteredTransactions = transactions.filter((trx) => {
+    if (!search.trim()) return true;
+    const q = search.toLowerCase();
+    return (
+      trx.transactionNumber?.toLowerCase().includes(q) ||
+      trx.description?.toLowerCase().includes(q) ||
+      trx.partyName?.toLowerCase().includes(q) ||
+      trx.referenceNo?.toLowerCase().includes(q) ||
+      trx.categoryId?.name?.toLowerCase().includes(q) ||
+      trx.financialAccountId?.name?.toLowerCase().includes(q)
+    );
+  });
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -149,44 +162,44 @@ export default function TransactionsPage() {
             Income receipts, operational expenses, and asset acquisitions.
           </p>
         </div>
-        <Button onClick={() => setIsModalOpen(true)}>
-          <Plus className="mr-2 h-4 w-4" /> Record Transaction
+        <Button onClick={() => setIsModalOpen(true)} className="gap-2 shadow-sm">
+          <Plus className="h-4 w-4" /> Record Transaction
         </Button>
       </div>
 
-      {/* Tabs and Search */}
-      <Card>
-        <CardContent className="p-4 flex flex-col md:flex-row gap-3 items-center justify-between">
-          <div className="flex flex-wrap gap-1.5 w-full md:w-auto">
-            {[
-              { id: 'all', label: 'All Transactions' },
-              { id: 'income', label: 'Income Only' },
-              { id: 'expense', label: 'Expenses Only' },
-              { id: 'asset_purchase', label: 'Asset Purchases' },
-            ].map((tab) => (
-              <Button
-                key={tab.id}
-                variant={activeTab === tab.id ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => setActiveTab(tab.id)}
-                className="text-xs h-9"
-              >
-                {tab.label}
-              </Button>
-            ))}
-          </div>
+      {/* Tabs and Search Bar */}
+      <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
+        <div className="inline-flex p-1 rounded-2xl bg-slate-100 dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-800 gap-1 overflow-x-auto">
+          {[
+            { id: 'all', label: 'All Transactions' },
+            { id: 'income', label: 'Income Only' },
+            { id: 'expense', label: 'Expenses Only' },
+            { id: 'asset_purchase', label: 'Asset Purchases' },
+          ].map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all duration-150 ${
+                activeTab === tab.id
+                  ? 'bg-emerald-600 text-white shadow-sm'
+                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+              }`}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
 
-          <div className="relative w-full md:w-64">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400" />
-            <Input
-              placeholder="Search memo, party, ref..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="pl-9 h-9 text-xs"
-            />
-          </div>
-        </CardContent>
-      </Card>
+        <div className="relative w-full md:w-72">
+          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+          <Input
+            placeholder="Search memo, party, ref, ID..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="pl-10 h-10 text-xs rounded-xl bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 shadow-sm"
+          />
+        </div>
+      </div>
 
       {/* Transactions Display */}
       {isLoading ? (
@@ -206,11 +219,15 @@ export default function TransactionsPage() {
             <Plus className="h-4 w-4" /> Record First Transaction
           </Button>
         </Card>
+      ) : filteredTransactions.length === 0 ? (
+        <Card className="p-8 text-center text-slate-400">
+          <p className="text-sm">No transactions match &quot;{search}&quot;</p>
+        </Card>
       ) : (
         <>
           {/* Mobile Card List (Visible on phones & narrow screens) */}
           <div className="block md:hidden space-y-3">
-            {transactions.map((trx) => {
+            {filteredTransactions.map((trx) => {
               const isIncome = trx.type === 'income';
               const isAsset = trx.type === 'asset_purchase';
 
@@ -327,7 +344,7 @@ export default function TransactionsPage() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 dark:divide-slate-800 text-xs">
-                  {transactions.map((trx) => {
+                  {filteredTransactions.map((trx) => {
                     const isIncome = trx.type === 'income';
                     const isAsset = trx.type === 'asset_purchase';
 

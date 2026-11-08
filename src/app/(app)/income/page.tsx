@@ -1,59 +1,203 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { MoneyText } from '@/components/shared/money-text';
+import { Input } from '@/components/ui/input';
 import { StatusBadge } from '@/components/shared/status-badge';
-import { ArrowDownLeft, Plus } from 'lucide-react';
+import { InvoiceAttachmentUpload } from '@/components/shared/invoice-attachment-upload';
+import {
+  ArrowDownLeft,
+  Plus,
+  Search,
+  Image as ImageIcon,
+  TrendingUp,
+  Receipt,
+  X,
+} from 'lucide-react';
 import { formatDate } from '@/lib/utils';
-import { formatBDT } from '@/lib/money';
-import Link from 'next/link';
+import { toPaisa, formatBDT } from '@/lib/money';
+import { toast } from 'sonner';
 
 export default function IncomePage() {
   const [incomes, setIncomes] = useState<any[]>([]);
+  const [categories, setCategories] = useState<any[]>([]);
+  const [accounts, setAccounts] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [search, setSearch] = useState('');
 
-  useEffect(() => {
-    fetch('/api/v1/transactions?type=income')
-      .then((r) => r.json())
-      .then((data) => {
-        if (data.success) setIncomes(data.data);
+  // Modal State
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [amount, setAmount] = useState('');
+  const [categoryId, setCategoryId] = useState('');
+  const [financialAccountId, setFinancialAccountId] = useState('');
+  const [paymentMethod, setPaymentMethod] = useState('cash');
+  const [partyName, setPartyName] = useState('');
+  const [referenceNo, setReferenceNo] = useState('');
+  const [description, setDescription] = useState('');
+  const [attachments, setAttachments] = useState<string[]>([]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const loadData = () => {
+    setIsLoading(true);
+    Promise.all([
+      fetch('/api/v1/transactions?type=income').then((r) => r.json()),
+      fetch('/api/v1/transaction-categories').then((r) => r.json()),
+      fetch('/api/v1/accounts').then((r) => r.json()),
+    ])
+      .then(([trxRes, catRes, accRes]) => {
+        if (trxRes.success) setIncomes(trxRes.data);
+        if (catRes.success) {
+          const incCats = catRes.data.filter((c: any) => c.type === 'income');
+          setCategories(incCats);
+          if (incCats.length > 0 && !categoryId) setCategoryId(incCats[0]._id);
+        }
+        if (accRes.success) {
+          setAccounts(accRes.data);
+          if (accRes.data.length > 0 && !financialAccountId) setFinancialAccountId(accRes.data[0]._id);
+        }
       })
       .finally(() => setIsLoading(false));
+  };
+
+  useEffect(() => {
+    loadData();
   }, []);
 
-  const totalIncome = incomes.reduce((acc, curr) => acc + (curr.status === 'posted' ? curr.amount : 0), 0);
+  const handleCreateIncome = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!amount || parseFloat(amount) <= 0) {
+      toast.error('Please enter a valid income amount');
+      return;
+    }
+
+    try {
+      setIsSubmitting(true);
+      const res = await fetch('/api/v1/transactions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          type: 'income',
+          amount: toPaisa(amount),
+          categoryId,
+          financialAccountId,
+          paymentMethod,
+          partyName,
+          referenceNo,
+          attachments,
+          description: description || 'Operating Income Entry',
+        }),
+      });
+
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        toast.error(data.message || 'Failed to record income.');
+        return;
+      }
+
+      toast.success(data.message || 'Income recorded successfully!');
+      setIsModalOpen(false);
+      setAmount('');
+      setDescription('');
+      setPartyName('');
+      setReferenceNo('');
+      setAttachments([]);
+      loadData();
+    } catch {
+      toast.error('Network error occurred.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const totalIncome = incomes.reduce(
+    (acc, curr) => acc + (curr.status === 'posted' ? curr.amount : 0),
+    0
+  );
+
+  const filteredIncomes = incomes.filter((item) => {
+    if (!search.trim()) return true;
+    const q = search.toLowerCase();
+    return (
+      item.transactionNumber?.toLowerCase().includes(q) ||
+      item.description?.toLowerCase().includes(q) ||
+      item.partyName?.toLowerCase().includes(q) ||
+      item.categoryId?.name?.toLowerCase().includes(q)
+    );
+  });
 
   return (
     <div className="space-y-6">
+      {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
+          <div className="flex items-center gap-2 mb-1">
+            <span className="rounded-md bg-emerald-500/10 px-2 py-0.5 text-xs font-semibold text-emerald-700 dark:text-emerald-400 border border-emerald-500/20">
+              Revenue Stream
+            </span>
+            <span className="text-xs text-slate-400">Total Entries: {incomes.length}</span>
+          </div>
           <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
             Income & Revenue
           </h1>
           <p className="text-sm text-slate-500">
-            Cash sales, service fees, commissions, and other earned income.
+            Cash sales, client service fees, commissions, and other earned operating income.
           </p>
         </div>
-        <Link href="/transactions">
-          <Button>
-            <Plus className="mr-2 h-4 w-4" /> Record Income
-          </Button>
-        </Link>
+        <Button onClick={() => setIsModalOpen(true)} className="gap-2 shadow-sm">
+          <Plus className="h-4 w-4" /> Record Income
+        </Button>
       </div>
 
-      <div className="rounded-2xl bg-gradient-to-r from-emerald-600 to-teal-700 p-6 text-white shadow-lg shadow-emerald-700/15">
-        <span className="text-xs font-semibold uppercase tracking-wider text-emerald-200">
-          Total Recorded Operating Income
-        </span>
-        <div className="text-3xl font-extrabold tracking-tight mt-1 font-mono">
-          {formatBDT(totalIncome)}
+      {/* Hero Stats Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="rounded-2xl bg-gradient-to-br from-emerald-600 via-emerald-700 to-teal-800 p-6 text-white shadow-lg shadow-emerald-700/15">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-semibold uppercase tracking-wider text-emerald-200">
+              Total Recorded Income
+            </span>
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-white/10 backdrop-blur">
+              <TrendingUp className="h-5 w-5 text-emerald-200" />
+            </div>
+          </div>
+          <div className="text-3xl font-extrabold tracking-tight mt-2 font-mono">
+            {formatBDT(totalIncome)}
+          </div>
+          <p className="text-xs text-emerald-100/90 mt-1">
+            Sum of all posted revenue transactions across active business categories.
+          </p>
         </div>
-        <p className="text-xs text-emerald-100 mt-1">
-          Sum of all posted revenue transactions across active business categories.
-        </p>
+
+        <div className="rounded-2xl border border-slate-200/80 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">
+              Active Income Records
+            </span>
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600 dark:bg-emerald-950/60 dark:text-emerald-400">
+              <Receipt className="h-5 w-5" />
+            </div>
+          </div>
+          <div className="text-3xl font-extrabold tracking-tight mt-2 font-mono text-slate-900 dark:text-white">
+            {incomes.length}
+          </div>
+          <p className="text-xs text-slate-500 mt-1">
+            Verified double-entry revenue vouchers recorded in the ledger.
+          </p>
+        </div>
       </div>
+
+      {/* Search / Filter Bar */}
+      {incomes.length > 0 && (
+        <div className="relative">
+          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+          <Input
+            placeholder="Search income by transaction #, customer name, memo, or category..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="pl-10 h-10 bg-white dark:bg-slate-900 rounded-xl"
+          />
+        </div>
+      )}
 
       {/* Income Records Display */}
       {isLoading ? (
@@ -65,21 +209,25 @@ export default function IncomePage() {
           <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-600 dark:bg-emerald-950/50 dark:text-emerald-400 mb-4 shadow-sm">
             <ArrowDownLeft className="h-7 w-7" />
           </div>
-          <h3 className="text-base font-bold text-slate-900 dark:text-white">No income transactions recorded yet</h3>
+          <h3 className="text-base font-bold text-slate-900 dark:text-white">
+            No income transactions recorded yet
+          </h3>
           <p className="text-xs text-slate-500 max-w-sm mx-auto mt-1 mb-6">
             Record cash sales, customer collections, and service revenue to begin tracking your earned income.
           </p>
-          <Link href="/transactions">
-            <Button className="gap-2 shadow-sm">
-              <Plus className="h-4 w-4" /> Record First Income
-            </Button>
-          </Link>
+          <Button onClick={() => setIsModalOpen(true)} className="gap-2 shadow-sm">
+            <Plus className="h-4 w-4" /> Record First Income
+          </Button>
+        </Card>
+      ) : filteredIncomes.length === 0 ? (
+        <Card className="p-8 text-center text-slate-400">
+          <p className="text-sm">No income records match &quot;{search}&quot;</p>
         </Card>
       ) : (
         <>
           {/* Mobile Card List (Visible on phones & narrow viewports) */}
           <div className="block md:hidden space-y-3">
-            {incomes.map((item) => (
+            {filteredIncomes.map((item) => (
               <div
                 key={item._id}
                 className="rounded-2xl border border-slate-200/80 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900 space-y-3"
@@ -105,14 +253,36 @@ export default function IncomePage() {
                 </div>
 
                 <div className="border-t border-slate-100 dark:border-slate-800/80 pt-2.5 text-xs space-y-1">
-                  <p className="font-medium text-slate-800 dark:text-slate-200">{item.description}</p>
+                  <p className="font-semibold text-slate-800 dark:text-slate-200">{item.description}</p>
                   <div className="flex items-center justify-between text-[11px] text-slate-500">
                     <span className="rounded bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 font-medium">
                       {item.categoryId?.name || 'Revenue'}
                     </span>
                     <span>{item.financialAccountId?.name || 'Account'}</span>
                   </div>
+                  {item.partyName && (
+                    <p className="text-[11px] text-slate-400">
+                      Customer / Source: <span className="text-slate-600 dark:text-slate-300">{item.partyName}</span>
+                    </p>
+                  )}
                 </div>
+
+                {item.attachments && item.attachments.length > 0 && (
+                  <div className="flex flex-wrap items-center gap-1.5 pt-0.5">
+                    {item.attachments.map((url: string, i: number) => (
+                      <a
+                        key={i}
+                        href={url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1 rounded-md bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800 px-2 py-0.5 text-[10px] font-medium text-emerald-700 dark:text-emerald-300 hover:underline"
+                      >
+                        <ImageIcon className="h-3 w-3" />
+                        <span>Receipt #{i + 1}</span>
+                      </a>
+                    ))}
+                  </div>
+                )}
               </div>
             ))}
           </div>
@@ -120,32 +290,64 @@ export default function IncomePage() {
           {/* Desktop Table View (Visible on >= md) */}
           <Card className="hidden md:block overflow-hidden">
             <div className="overflow-x-auto">
-              <table className="w-full min-w-[700px] text-left text-sm">
+              <table className="w-full min-w-[750px] text-left text-sm">
                 <thead className="bg-slate-50 text-xs uppercase font-semibold text-slate-500 border-b border-slate-100 dark:bg-slate-800/40 dark:border-slate-800">
                   <tr>
                     <th className="px-5 py-3.5">Date & ID</th>
                     <th className="px-5 py-3.5">Category</th>
-                    <th className="px-5 py-3.5">Description</th>
-                    <th className="px-5 py-3.5">Account</th>
+                    <th className="px-5 py-3.5">Description & Customer</th>
+                    <th className="px-5 py-3.5">Receiving Account</th>
                     <th className="px-5 py-3.5 text-right">Amount</th>
                     <th className="px-5 py-3.5">Status</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 dark:divide-slate-800 text-xs">
-                  {incomes.map((item) => (
+                  {filteredIncomes.map((item) => (
                     <tr key={item._id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30">
                       <td className="px-5 py-3 font-mono font-bold text-slate-900 dark:text-white">
                         {item.transactionNumber}
-                        <span className="text-slate-400 text-[11px] block font-normal">{formatDate(item.date)}</span>
+                        <span className="text-slate-400 text-[11px] block font-normal">
+                          {formatDate(item.date)}
+                        </span>
                       </td>
                       <td className="px-5 py-3 font-medium text-slate-800 dark:text-slate-200">
                         {item.categoryId?.name || 'Revenue'}
                       </td>
                       <td className="px-5 py-3 text-slate-700 dark:text-slate-300 font-medium">
-                        {item.description}
+                        <div>
+                          <span>{item.description}</span>
+                          {item.partyName && (
+                            <span className="text-slate-400 text-[11px] block">
+                              From: {item.partyName}
+                            </span>
+                          )}
+                          {item.attachments && item.attachments.length > 0 && (
+                            <div className="flex items-center gap-1.5 mt-1">
+                              {item.attachments.map((url: string, i: number) => (
+                                <a
+                                  key={i}
+                                  href={url}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="inline-flex items-center gap-1 rounded-md bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800 px-1.5 py-0.5 text-[10px] font-medium text-emerald-700 dark:text-emerald-300 hover:underline"
+                                >
+                                  <ImageIcon className="h-3 w-3" />
+                                  <span>Bill #{i + 1}</span>
+                                </a>
+                              ))}
+                            </div>
+                          )}
+                        </div>
                       </td>
                       <td className="px-5 py-3 text-slate-500">
-                        {item.financialAccountId?.name}
+                        <div>
+                          <span className="font-semibold text-slate-700 dark:text-slate-300 block">
+                            {item.financialAccountId?.name}
+                          </span>
+                          <span className="text-[11px] text-slate-400 capitalize">
+                            {item.paymentMethod?.replace('_', ' ')}
+                          </span>
+                        </div>
                       </td>
                       <td className="px-5 py-3 text-right font-mono font-bold text-emerald-600">
                         +{formatBDT(item.amount)}
@@ -160,6 +362,153 @@ export default function IncomePage() {
             </div>
           </Card>
         </>
+      )}
+
+      {/* Record Income Modal */}
+      {isModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in overflow-y-auto">
+          <div className="relative w-full max-w-lg rounded-3xl border border-slate-200 bg-white p-6 sm:p-8 shadow-2xl dark:border-slate-800 dark:bg-slate-900 my-8">
+            <button
+              onClick={() => setIsModalOpen(false)}
+              className="absolute right-5 top-5 p-1 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800"
+            >
+              <X className="h-5 w-5" />
+            </button>
+
+            <div className="flex items-center gap-3 mb-1">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600 dark:bg-emerald-950/60 dark:text-emerald-400">
+                <ArrowDownLeft className="h-5 w-5" />
+              </div>
+              <div>
+                <h2 className="text-xl font-bold text-slate-900 dark:text-white">Record Income</h2>
+                <p className="text-xs text-slate-500">
+                  Credit revenue and debit cash/bank with double-entry precision.
+                </p>
+              </div>
+            </div>
+
+            <form onSubmit={handleCreateIncome} className="space-y-4 mt-6">
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                  Income Amount (৳ BDT) *
+                </label>
+                <Input
+                  type="number"
+                  step="0.01"
+                  placeholder="0.00"
+                  value={amount}
+                  onChange={(e) => setAmount(e.target.value)}
+                  className="font-mono text-base font-semibold"
+                  required
+                />
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                    Income Category *
+                  </label>
+                  <select
+                    className="h-10 w-full rounded-xl border border-slate-200 bg-white px-3 text-xs dark:bg-slate-900 dark:border-slate-800 dark:text-slate-200"
+                    value={categoryId}
+                    onChange={(e) => setCategoryId(e.target.value)}
+                    required
+                  >
+                    {categories.map((c) => (
+                      <option key={c._id} value={c._id}>
+                        {c.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                    Receiving Account *
+                  </label>
+                  <select
+                    className="h-10 w-full rounded-xl border border-slate-200 bg-white px-3 text-xs dark:bg-slate-900 dark:border-slate-800 dark:text-slate-200"
+                    value={financialAccountId}
+                    onChange={(e) => setFinancialAccountId(e.target.value)}
+                    required
+                  >
+                    {accounts.map((acc) => (
+                      <option key={acc._id} value={acc._id}>
+                        {acc.name} ({acc.type.replace('_', ' ')})
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                    Payment Method
+                  </label>
+                  <select
+                    className="h-10 w-full rounded-xl border border-slate-200 bg-white px-3 text-xs dark:bg-slate-900 dark:border-slate-800 dark:text-slate-200"
+                    value={paymentMethod}
+                    onChange={(e) => setPaymentMethod(e.target.value)}
+                  >
+                    <option value="cash">Cash in Hand</option>
+                    <option value="bank_transfer">Bank Transfer</option>
+                    <option value="mobile_money">bKash / Nagad / Rocket</option>
+                    <option value="cheque">Bank Cheque</option>
+                    <option value="card">Debit / Credit Card</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                    Customer / Source
+                  </label>
+                  <Input
+                    placeholder="e.g. Retail Customer, Client Ltd."
+                    value={partyName}
+                    onChange={(e) => setPartyName(e.target.value)}
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                  Description / Memo
+                </label>
+                <Input
+                  placeholder="e.g. Daily cash sales collection"
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                />
+              </div>
+
+              {/* Cloudinary Invoice / Money Receipt Upload */}
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                  Receipt / Invoice Picture (Cloudinary)
+                </label>
+                <InvoiceAttachmentUpload
+                  attachments={attachments}
+                  onChange={setAttachments}
+                  folder="shopnear_finance/income"
+                />
+              </div>
+
+              <div className="flex justify-end gap-3 pt-4 border-t border-slate-100 dark:border-slate-800">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setIsModalOpen(false)}
+                >
+                  Cancel
+                </Button>
+                <Button type="submit" isLoading={isSubmitting} className="gap-2">
+                  <Plus className="h-4 w-4" /> Save Income
+                </Button>
+              </div>
+            </form>
+          </div>
+        </div>
       )}
     </div>
   );
