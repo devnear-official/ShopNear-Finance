@@ -45,6 +45,8 @@ export function MobileDrawer({ isOpen, onClose, userRole = 'owner' }: MobileDraw
     { title: 'Loans', href: '/loans', icon: HandCoins },
     { title: 'Invoices & Sales', href: '/invoices', icon: Receipt },
     { title: 'Bills & Payables', href: '/payables', icon: FileSpreadsheet },
+    { title: 'Customers', href: '/customers', icon: Users },
+    { title: 'Suppliers', href: '/suppliers', icon: Users },
     { title: 'Chart of Accounts', href: '/accounting/chart-of-accounts', icon: BookOpen },
     { title: 'Journal Entries', href: '/accounting/journal-entries', icon: FileSpreadsheet },
     { title: 'General Ledger', href: '/accounting/general-ledger', icon: BookOpen },

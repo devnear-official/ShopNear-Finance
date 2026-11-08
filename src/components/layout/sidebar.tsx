@@ -84,6 +84,8 @@ export function Sidebar({ userRole = 'owner', userPermissions = [], isCollapsed,
         { title: 'Loans', href: '/loans', icon: HandCoins, permission: PERMISSIONS.LOANS_VIEW },
         { title: 'Invoices & Sales', href: '/invoices', icon: Receipt, permission: PERMISSIONS.INVOICES_VIEW },
         { title: 'Bills & Payables', href: '/payables', icon: FileSpreadsheet, permission: PERMISSIONS.BILLS_VIEW },
+        { title: 'Customers', href: '/customers', icon: Users, permission: PERMISSIONS.INVOICES_VIEW },
+        { title: 'Suppliers', href: '/suppliers', icon: Users, permission: PERMISSIONS.BILLS_VIEW },
       ],
     },
     {

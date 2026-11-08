@@ -24,3 +24,5 @@ export * from './loan-repayment.model';
 export * from './party.model';
 export * from './invoice.model';
 export * from './bill.model';
+export * from './business-profile.model';
+export * from './system-settings.model';
