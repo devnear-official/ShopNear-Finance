@@ -1,4 +1,5 @@
 import mongoose, { Schema, Document, Model, Types } from 'mongoose';
+import './role.model';
 
 export type UserStatus = 'active' | 'suspended';
 
