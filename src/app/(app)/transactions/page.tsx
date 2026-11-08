@@ -188,122 +188,237 @@ export default function TransactionsPage() {
         </CardContent>
       </Card>
 
-      {/* Transactions Table */}
-      <Card>
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-sm">
-            <thead className="bg-slate-50 text-xs uppercase font-semibold text-slate-500 border-b border-slate-100 dark:bg-slate-800/40 dark:border-slate-800">
-              <tr>
-                <th className="px-5 py-3.5">Date & ID</th>
-                <th className="px-5 py-3.5">Type & Category</th>
-                <th className="px-5 py-3.5">Description & Party</th>
-                <th className="px-5 py-3.5">Account / Method</th>
-                <th className="px-5 py-3.5 text-right">Amount</th>
-                <th className="px-5 py-3.5">Status</th>
-                <th className="px-5 py-3.5 text-right">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100 dark:divide-slate-800 text-xs">
-              {isLoading ? (
-                <tr>
-                  <td colSpan={7} className="px-5 py-8 text-center text-slate-400">Loading transactions...</td>
-                </tr>
-              ) : transactions.length === 0 ? (
-                <tr>
-                  <td colSpan={7} className="px-5 py-8 text-center text-slate-400">No transactions found.</td>
-                </tr>
-              ) : (
-                transactions.map((trx) => {
-                  const isIncome = trx.type === 'income';
-                  const isAsset = trx.type === 'asset_purchase';
+      {/* Transactions Display */}
+      {isLoading ? (
+        <Card className="p-8 text-center text-slate-400">
+          <p className="text-sm">Loading transactions...</p>
+        </Card>
+      ) : transactions.length === 0 ? (
+        <Card className="flex flex-col items-center justify-center p-8 sm:p-12 text-center border-dashed">
+          <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-600 dark:bg-emerald-950/50 dark:text-emerald-400 mb-4 shadow-sm">
+            <Package className="h-7 w-7" />
+          </div>
+          <h3 className="text-base font-bold text-slate-900 dark:text-white">No transactions found</h3>
+          <p className="text-xs text-slate-500 max-w-sm mx-auto mt-1 mb-6">
+            Record revenue receipts, operational expenses, or asset acquisitions to begin tracking business activity.
+          </p>
+          <Button onClick={() => setIsModalOpen(true)} className="gap-2 shadow-sm">
+            <Plus className="h-4 w-4" /> Record First Transaction
+          </Button>
+        </Card>
+      ) : (
+        <>
+          {/* Mobile Card List (Visible on phones & narrow screens) */}
+          <div className="block md:hidden space-y-3">
+            {transactions.map((trx) => {
+              const isIncome = trx.type === 'income';
+              const isAsset = trx.type === 'asset_purchase';
 
-                  return (
-                    <tr key={trx._id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30">
-                      <td className="px-5 py-3">
-                        <span className="font-mono font-bold text-slate-900 dark:text-white block">
+              return (
+                <div
+                  key={trx._id}
+                  className="rounded-2xl border border-slate-200/80 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900 space-y-3"
+                >
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="flex items-center gap-2">
+                      <div
+                        className={`flex h-8 w-8 items-center justify-center rounded-lg ${
+                          isIncome
+                            ? 'bg-emerald-50 text-emerald-600 dark:bg-emerald-950/60 dark:text-emerald-400'
+                            : isAsset
+                            ? 'bg-purple-50 text-purple-600 dark:bg-purple-950/60 dark:text-purple-400'
+                            : 'bg-orange-50 text-orange-600 dark:bg-orange-950/60 dark:text-orange-400'
+                        }`}
+                      >
+                        {isIncome ? (
+                          <ArrowDownLeft className="h-4 w-4" />
+                        ) : isAsset ? (
+                          <Package className="h-4 w-4" />
+                        ) : (
+                          <ArrowUpRight className="h-4 w-4" />
+                        )}
+                      </div>
+                      <div>
+                        <span className="font-mono text-sm font-bold text-slate-900 dark:text-white block">
                           {trx.transactionNumber}
                         </span>
-                        <span className="text-slate-400 text-[11px]">{formatDate(trx.date)}</span>
-                      </td>
+                        <span className="text-[11px] text-slate-400">{formatDate(trx.date)}</span>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <span
+                        className={`font-mono text-sm font-bold block ${
+                          isIncome
+                            ? 'text-emerald-600 dark:text-emerald-400'
+                            : isAsset
+                            ? 'text-purple-600 dark:text-purple-400'
+                            : 'text-orange-600 dark:text-orange-400'
+                        }`}
+                      >
+                        {isIncome ? `+${formatBDT(trx.amount)}` : `-${formatBDT(trx.amount)}`}
+                      </span>
+                      <StatusBadge status={trx.status} />
+                    </div>
+                  </div>
 
-                      <td className="px-5 py-3">
-                        <span className="font-semibold text-slate-800 dark:text-slate-200 block">
-                          {trx.categoryId?.name || 'Category'}
-                        </span>
-                        <span className="capitalize text-[11px] text-slate-400">{trx.type.replace('_', ' ')}</span>
-                      </td>
+                  <div className="border-t border-slate-100 dark:border-slate-800/80 pt-2.5 text-xs space-y-1">
+                    <div className="flex items-center justify-between text-slate-700 dark:text-slate-300">
+                      <span className="font-semibold">{trx.description}</span>
+                      <span className="text-[11px] text-slate-400 capitalize">{trx.paymentMethod}</span>
+                    </div>
+                    <div className="flex items-center justify-between text-slate-500 text-[11px]">
+                      <span>{trx.categoryId?.name || 'Category'}</span>
+                      <span>{trx.financialAccountId?.name || 'Account'}</span>
+                    </div>
+                    {trx.partyName && (
+                      <div className="text-[11px] text-slate-400">
+                        Party: <span className="text-slate-600 dark:text-slate-300">{trx.partyName}</span>
+                      </div>
+                    )}
+                  </div>
 
-                      <td className="px-5 py-3">
-                        <span className="text-slate-800 dark:text-slate-200 font-medium block">
-                          {trx.description}
-                        </span>
-                        {trx.partyName && (
-                          <span className="text-[11px] text-slate-400 block">Party: {trx.partyName}</span>
-                        )}
-                        {trx.attachments && trx.attachments.length > 0 && (
-                          <div className="flex items-center gap-1.5 mt-1">
-                            {trx.attachments.map((url: string, i: number) => (
-                              <a
-                                key={i}
-                                href={url}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="inline-flex items-center gap-1 rounded-md bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800 px-1.5 py-0.5 text-[10px] font-medium text-emerald-700 dark:text-emerald-300 hover:underline"
-                                title="View Cloudinary Invoice Picture"
-                              >
-                                <ImageIcon className="h-3 w-3" />
-                                <span>Receipt #{i + 1}</span>
-                              </a>
-                            ))}
-                          </div>
-                        )}
-                      </td>
-
-                      <td className="px-5 py-3">
-                        <span className="text-slate-700 dark:text-slate-300 font-medium block">
-                          {trx.financialAccountId?.name || 'Account'}
-                        </span>
-                        <span className="capitalize text-[11px] text-slate-400">{trx.paymentMethod}</span>
-                      </td>
-
-                      <td className="px-5 py-3 text-right">
-                        <span
-                          className={`font-mono font-bold text-sm ${
-                            isIncome
-                              ? 'text-emerald-600'
-                              : isAsset
-                              ? 'text-purple-600'
-                              : 'text-orange-600'
-                          }`}
+                  {trx.attachments && trx.attachments.length > 0 && (
+                    <div className="flex flex-wrap items-center gap-1.5 pt-0.5">
+                      {trx.attachments.map((url: string, i: number) => (
+                        <a
+                          key={i}
+                          href={url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1 rounded-md bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800 px-2 py-1 text-[11px] font-medium text-emerald-700 dark:text-emerald-300 hover:underline"
                         >
-                          {isIncome ? `+${formatBDT(trx.amount)}` : `-${formatBDT(trx.amount)}`}
-                        </span>
-                      </td>
+                          <ImageIcon className="h-3 w-3" />
+                          <span>Receipt #{i + 1}</span>
+                        </a>
+                      ))}
+                    </div>
+                  )}
 
-                      <td className="px-5 py-3">
-                        <StatusBadge status={trx.status} />
-                      </td>
+                  {trx.status === 'posted' && (
+                    <div className="pt-1">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="w-full text-xs text-slate-600 dark:text-slate-400 hover:text-red-600 dark:hover:text-red-400"
+                        onClick={() => handleReverse(trx._id, trx.transactionNumber)}
+                      >
+                        <RotateCcw className="mr-1.5 h-3.5 w-3.5" /> Reverse Transaction
+                      </Button>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
 
-                      <td className="px-5 py-3 text-right">
-                        {trx.status === 'posted' && (
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handleReverse(trx._id, trx.transactionNumber)}
-                            title="Reverse transaction"
+          {/* Desktop Table View (Visible on >= md) */}
+          <Card className="hidden md:block overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="w-full min-w-[850px] text-left text-sm">
+                <thead className="bg-slate-50 text-xs uppercase font-semibold text-slate-500 border-b border-slate-100 dark:bg-slate-800/40 dark:border-slate-800">
+                  <tr>
+                    <th className="px-5 py-3.5">Date & ID</th>
+                    <th className="px-5 py-3.5">Type & Category</th>
+                    <th className="px-5 py-3.5">Description & Party</th>
+                    <th className="px-5 py-3.5">Account / Method</th>
+                    <th className="px-5 py-3.5 text-right">Amount</th>
+                    <th className="px-5 py-3.5">Status</th>
+                    <th className="px-5 py-3.5 text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100 dark:divide-slate-800 text-xs">
+                  {transactions.map((trx) => {
+                    const isIncome = trx.type === 'income';
+                    const isAsset = trx.type === 'asset_purchase';
+
+                    return (
+                      <tr key={trx._id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30">
+                        <td className="px-5 py-3">
+                          <span className="font-mono font-bold text-slate-900 dark:text-white block">
+                            {trx.transactionNumber}
+                          </span>
+                          <span className="text-slate-400 text-[11px]">{formatDate(trx.date)}</span>
+                        </td>
+
+                        <td className="px-5 py-3">
+                          <span className="font-semibold text-slate-800 dark:text-slate-200 block">
+                            {trx.categoryId?.name || 'Category'}
+                          </span>
+                          <span className="capitalize text-[11px] text-slate-400">{trx.type.replace('_', ' ')}</span>
+                        </td>
+
+                        <td className="px-5 py-3">
+                          <span className="text-slate-800 dark:text-slate-200 font-medium block">
+                            {trx.description}
+                          </span>
+                          {trx.partyName && (
+                            <span className="text-[11px] text-slate-400 block">Party: {trx.partyName}</span>
+                          )}
+                          {trx.attachments && trx.attachments.length > 0 && (
+                            <div className="flex items-center gap-1.5 mt-1">
+                              {trx.attachments.map((url: string, i: number) => (
+                                <a
+                                  key={i}
+                                  href={url}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="inline-flex items-center gap-1 rounded-md bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800 px-1.5 py-0.5 text-[10px] font-medium text-emerald-700 dark:text-emerald-300 hover:underline"
+                                  title="View Cloudinary Invoice Picture"
+                                >
+                                  <ImageIcon className="h-3 w-3" />
+                                  <span>Receipt #{i + 1}</span>
+                                </a>
+                              ))}
+                            </div>
+                          )}
+                        </td>
+
+                        <td className="px-5 py-3">
+                          <span className="text-slate-700 dark:text-slate-300 font-medium block">
+                            {trx.financialAccountId?.name || 'Account'}
+                          </span>
+                          <span className="capitalize text-[11px] text-slate-400">{trx.paymentMethod}</span>
+                        </td>
+
+                        <td className="px-5 py-3 text-right">
+                          <span
+                            className={`font-mono font-bold text-sm ${
+                              isIncome
+                                ? 'text-emerald-600'
+                                : isAsset
+                                ? 'text-purple-600'
+                                : 'text-orange-600'
+                            }`}
                           >
-                            <RotateCcw className="h-4 w-4 text-slate-400 hover:text-red-500" />
-                          </Button>
-                        )}
-                      </td>
-                    </tr>
-                  );
-                })
-              )}
-            </tbody>
-          </table>
-        </div>
-      </Card>
+                            {isIncome ? `+${formatBDT(trx.amount)}` : `-${formatBDT(trx.amount)}`}
+                          </span>
+                        </td>
+
+                        <td className="px-5 py-3">
+                          <StatusBadge status={trx.status} />
+                        </td>
+
+                        <td className="px-5 py-3 text-right">
+                          {trx.status === 'posted' && (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleReverse(trx._id, trx.transactionNumber)}
+                              title="Reverse transaction"
+                            >
+                              <RotateCcw className="h-4 w-4 text-slate-400 hover:text-red-500" />
+                            </Button>
+                          )}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </Card>
+        </>
+      )}
 
       {/* Record Transaction Modal */}
       {isModalOpen && (

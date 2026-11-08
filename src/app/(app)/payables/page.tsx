@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { MoneyText } from '@/components/shared/money-text';
 import { StatusBadge } from '@/components/shared/status-badge';
-import { FileSpreadsheet, Plus } from 'lucide-react';
+import { FileSpreadsheet, Plus, User, Calendar } from 'lucide-react';
 import { toPaisa, formatBDT } from '@/lib/money';
 import { formatDate } from '@/lib/utils';
 import { toast } from 'sonner';
@@ -107,57 +107,127 @@ export default function PayablesPage() {
         </p>
       </div>
 
-      <Card>
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-sm">
-            <thead className="bg-slate-50 text-xs uppercase font-semibold text-slate-500 border-b border-slate-100 dark:bg-slate-800/40 dark:border-slate-800">
-              <tr>
-                <th className="px-5 py-3.5">Bill #</th>
-                <th className="px-5 py-3.5">Supplier</th>
-                <th className="px-5 py-3.5">Due Date</th>
-                <th className="px-5 py-3.5 text-right">Total</th>
-                <th className="px-5 py-3.5 text-right">Paid</th>
-                <th className="px-5 py-3.5 text-right">Balance Due</th>
-                <th className="px-5 py-3.5">Status</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100 dark:divide-slate-800 text-xs">
-              {isLoading ? (
-                <tr>
-                  <td colSpan={7} className="px-5 py-8 text-center text-slate-400">Loading bills...</td>
-                </tr>
-              ) : bills.length === 0 ? (
-                <tr>
-                  <td colSpan={7} className="px-5 py-8 text-center text-slate-400">No bills recorded yet.</td>
-                </tr>
-              ) : (
-                bills.map((bill) => {
-                  const due = bill.total - bill.paidAmount;
-                  return (
-                    <tr key={bill._id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30">
-                      <td className="px-5 py-3 font-mono font-bold text-slate-900 dark:text-white">
+      {/* Payables Display */}
+      {isLoading ? (
+        <Card className="p-8 text-center text-slate-400">
+          <p className="text-sm">Loading bills...</p>
+        </Card>
+      ) : bills.length === 0 ? (
+        <Card className="flex flex-col items-center justify-center p-8 sm:p-12 text-center border-dashed">
+          <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-amber-50 text-amber-600 dark:bg-amber-950/50 dark:text-amber-400 mb-4 shadow-sm">
+            <FileSpreadsheet className="h-7 w-7" />
+          </div>
+          <h3 className="text-base font-bold text-slate-900 dark:text-white">No bills recorded yet</h3>
+          <p className="text-xs text-slate-500 max-w-sm mx-auto mt-1 mb-6">
+            Record supplier and vendor bills to track upcoming obligations and payable balances on the accrual ledger.
+          </p>
+          <Button onClick={() => setIsCreateOpen(true)} className="gap-2 shadow-sm">
+            <Plus className="h-4 w-4" /> Record First Bill
+          </Button>
+        </Card>
+      ) : (
+        <>
+          {/* Mobile Card List (Visible on phones & narrow screens) */}
+          <div className="block md:hidden space-y-3">
+            {bills.map((bill) => {
+              const due = bill.total - bill.paidAmount;
+              return (
+                <div
+                  key={bill._id}
+                  className="rounded-2xl border border-slate-200/80 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900 space-y-3"
+                >
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="flex items-center gap-2">
+                      <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-amber-50 text-amber-600 dark:bg-amber-950/60 dark:text-amber-400">
+                        <FileSpreadsheet className="h-4 w-4" />
+                      </div>
+                      <span className="font-mono text-sm font-bold text-slate-900 dark:text-white">
                         {bill.billNumber}
-                      </td>
-                      <td className="px-5 py-3 font-semibold text-slate-800 dark:text-slate-200">
-                        {bill.partyId?.name || 'Supplier'}
-                      </td>
-                      <td className="px-5 py-3 text-slate-500">{formatDate(bill.dueDate)}</td>
-                      <td className="px-5 py-3 text-right font-mono font-semibold">{formatBDT(bill.total)}</td>
-                      <td className="px-5 py-3 text-right font-mono text-emerald-600">{formatBDT(bill.paidAmount)}</td>
-                      <td className="px-5 py-3 text-right font-mono font-bold text-slate-900 dark:text-white">
+                      </span>
+                    </div>
+                    <StatusBadge status={bill.status} />
+                  </div>
+
+                  <div className="flex items-center justify-between text-xs text-slate-600 dark:text-slate-400 border-b border-slate-100 dark:border-slate-800/80 pb-2.5">
+                    <div className="flex items-center gap-1.5 font-medium text-slate-900 dark:text-slate-200">
+                      <User className="h-3.5 w-3.5 text-slate-400" />
+                      <span>{bill.partyId?.name || 'Supplier'}</span>
+                    </div>
+                    <div className="flex items-center gap-1 text-slate-500 text-[11px]">
+                      <Calendar className="h-3 w-3 text-slate-400" />
+                      <span>Due: {formatDate(bill.dueDate)}</span>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-3 gap-2 rounded-xl bg-slate-50 p-2.5 dark:bg-slate-800/50 text-center">
+                    <div>
+                      <p className="text-[10px] uppercase font-semibold text-slate-400 tracking-wider">Total</p>
+                      <p className="font-mono text-xs font-bold text-slate-800 dark:text-slate-200 mt-0.5">
+                        {formatBDT(bill.total)}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-[10px] uppercase font-semibold text-slate-400 tracking-wider">Paid</p>
+                      <p className="font-mono text-xs font-bold text-emerald-600 dark:text-emerald-400 mt-0.5">
+                        {formatBDT(bill.paidAmount)}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-[10px] uppercase font-semibold text-slate-400 tracking-wider">Balance Due</p>
+                      <p className="font-mono text-xs font-bold text-rose-600 dark:text-rose-400 mt-0.5">
                         {formatBDT(due)}
-                      </td>
-                      <td className="px-5 py-3">
-                        <StatusBadge status={bill.status} />
-                      </td>
-                    </tr>
-                  );
-                })
-              )}
-            </tbody>
-          </table>
-        </div>
-      </Card>
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Desktop Table View (Visible on >= md) */}
+          <Card className="hidden md:block overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="w-full min-w-[720px] text-left text-sm">
+                <thead className="bg-slate-50 text-xs uppercase font-semibold text-slate-500 border-b border-slate-100 dark:bg-slate-800/40 dark:border-slate-800">
+                  <tr>
+                    <th className="px-5 py-3.5">Bill #</th>
+                    <th className="px-5 py-3.5">Supplier</th>
+                    <th className="px-5 py-3.5">Due Date</th>
+                    <th className="px-5 py-3.5 text-right">Total</th>
+                    <th className="px-5 py-3.5 text-right">Paid</th>
+                    <th className="px-5 py-3.5 text-right">Balance Due</th>
+                    <th className="px-5 py-3.5">Status</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100 dark:divide-slate-800 text-xs">
+                  {bills.map((bill) => {
+                    const due = bill.total - bill.paidAmount;
+                    return (
+                      <tr key={bill._id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30">
+                        <td className="px-5 py-3 font-mono font-bold text-slate-900 dark:text-white">
+                          {bill.billNumber}
+                        </td>
+                        <td className="px-5 py-3 font-semibold text-slate-800 dark:text-slate-200">
+                          {bill.partyId?.name || 'Supplier'}
+                        </td>
+                        <td className="px-5 py-3 text-slate-500">{formatDate(bill.dueDate)}</td>
+                        <td className="px-5 py-3 text-right font-mono font-semibold">{formatBDT(bill.total)}</td>
+                        <td className="px-5 py-3 text-right font-mono text-emerald-600">{formatBDT(bill.paidAmount)}</td>
+                        <td className="px-5 py-3 text-right font-mono font-bold text-slate-900 dark:text-white">
+                          {formatBDT(due)}
+                        </td>
+                        <td className="px-5 py-3">
+                          <StatusBadge status={bill.status} />
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </Card>
+        </>
+      )}
 
       {/* Record Bill Modal */}
       {isCreateOpen && (
